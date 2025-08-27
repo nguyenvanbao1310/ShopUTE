@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "751676Kh@",
+    "password": "123456",
     "database": "shopute",
     "host": "127.0.0.1",
     "dialect": "mysql"

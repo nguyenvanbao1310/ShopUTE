@@ -1,17 +1,11 @@
 import express, { Request, Response } from "express";
-import { Router } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
 import { User } from "../models/User"; // model sequelize
-import { register, verifyOtp } from "../controllers/authControllers";
-import { validateRegister } from "../middleware/validateRegister";
+const app = express();
+app.use(express.json());
 
-// const app = express();
-// app.use(express.json());
-const router = Router();
-
-router.post("/login", async (req: Request, res: Response) => {
+app.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
@@ -45,8 +39,4 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/register", validateRegister, register);
-router.post("/verify-otp", verifyOtp);
-
-export default router;
-
+export default app;
