@@ -14,13 +14,12 @@ const sequelize = new sequelize_1.Sequelize("shopute", "root", DB_PASS, {
     logging: false,
 });
 const connectDB = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log("✅ Connection has been established successfully.");
-    }
-    catch (error) {
-        console.error("❌ Unable to connect to the database:", error);
-    }
+  try {
+    await sequelize.authenticate();
+    console.log("✅ Connection has been established successfully.");
+  } catch (error) {
+    console.error("❌ Unable to connect to the database:", error);
+  }
 };
 exports.connectDB = connectDB;
 // 👉 export cả instance sequelize để models, migration dùng
