@@ -42,26 +42,21 @@ export const login = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const user = await registerUserSvc(req.body);
+    const { regToken } = await registerUserSvc(req.body);
     return res.status(201).json({
-      message:
-        "Đăng ký thành công. Vui lòng kiểm tra email để nhập OTP xác thực.",
-      user,
+      message: "Đăng ký thành công. Vui lòng kiểm tra email để nhập OTP xác thực.",
+      regToken
     });
   } catch (e: any) {
-    return res
-      .status(e?.status || 500)
-      .json({ message: e?.message || "Lỗi máy chủ" });
+    return res.status(e?.status || 500).json({ message: e?.message || "Lỗi máy chủ" });
   }
 };
 
 export const verifyOtp = async (req: Request, res: Response) => {
   try {
-    await verifyOtpSvc(req.body);
-    return res.status(200).json({ message: "Xác thực OTP thành công" });
+    const user = await verifyOtpSvc(req.body);
+    return res.status(200).json({ message: "Xác thực OTP thành công", user });
   } catch (e: any) {
-    return res
-      .status(e?.status || 500)
-      .json({ message: e?.message || "Lỗi máy chủ" });
+    return res.status(e?.status || 500).json({ message: e?.message || "Lỗi máy chủ" });
   }
 };
