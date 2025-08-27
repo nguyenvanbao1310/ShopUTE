@@ -1,6 +1,9 @@
 import express, { Request, Response } from "express";
 import { connectDB } from "./config/configdb"; // đường dẫn tới file db.ts
 import authRoutes from "./routes/authRoutes";
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 8088;

@@ -1,0 +1,1 @@
+{"version":3,"file":"validateRegister.d.ts","sourceRoot":"","sources":["../../src/middleware/validateRegister.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,YAAY,EAAE,MAAM,SAAS,CAAC;AAK1D,wBAAgB,gBAAgB,CAC9B,GAAG,EAAE,OAAO,EACZ,GAAG,EAAE,QAAQ,EACb,IAAI,EAAE,YAAY,kDAiCnB"}
