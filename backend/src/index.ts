@@ -5,7 +5,7 @@ import authRoutes from "./routes/authRoutes";
 const app = express();
 const PORT = process.env.PORT || 8088;
 app.use(express.json());
-app.use("/api/", authRoutes);
+app.use("/api", authRoutes);
 
 // Kết nối DB
 connectDB();
