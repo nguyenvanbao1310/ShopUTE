@@ -1,15 +1,21 @@
 import express, { Request, Response } from "express";
+import { connectDB } from "./config/configdb"; // đường dẫn tới file db.ts
+import authRoutes from "./routes/authRoutes";
 
 const app = express();
 const PORT = process.env.PORT || 8088;
-
 app.use(express.json());
+app.use("/api/", authRoutes);
 
-// Route mẫu
-app.get("/", (req: Request, res: Response) => {
+// Kết nối DB
+connectDB();
+
+// Routes
+app.get("/", (req, res) => {
   res.send("Backend chạy bằng TypeScript 🚀");
 });
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
