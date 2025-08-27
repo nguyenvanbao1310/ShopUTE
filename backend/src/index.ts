@@ -3,6 +3,7 @@ import { connectDB } from "./config/configdb"; // đường dẫn tới file db.
 import authRoutes from "./routes/authRoutes";
 import dotenv from "dotenv";
 import cors from "cors";
+import userRoutes from "./routes/userRoutes"; 
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ app.use(
 );
 app.use(express.json());
 app.use("/api/", authRoutes);
-
+app.use("/api/users", userRoutes); // thêm dòng này
 // Kết nối DB
 connectDB();
 
