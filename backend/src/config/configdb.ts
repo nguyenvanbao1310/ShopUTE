@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
 
-const sequelize = new Sequelize("shopute", "root", "751676Kh@", {
+const sequelize = new Sequelize("shopute", "root", "Nhansam@01", {
   host: "localhost",
   dialect: "mysql",
   logging: false,
