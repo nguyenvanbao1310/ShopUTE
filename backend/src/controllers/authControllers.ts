@@ -1,9 +1,17 @@
 import { Request, Response } from "express";
-import { User } from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-const JWT_SECRET = "your_secret_key"; // bạn nên cho vào process.env
+import { User } from "../models/User";
+import { registerUserSvc, verifyOtpSvc } from "../services/authService";
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET; // bạn nên cho vào process.env
+if (!JWT_SECRET) {
+  throw new Error("Missing JWT_SECRET in environment variables");
+}
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -29,5 +37,31 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (err) {
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const register = async (req: Request, res: Response) => {
+  try {
+    const user = await registerUserSvc(req.body);
+    return res.status(201).json({
+      message:
+        "Đăng ký thành công. Vui lòng kiểm tra email để nhập OTP xác thực.",
+      user,
+    });
+  } catch (e: any) {
+    return res
+      .status(e?.status || 500)
+      .json({ message: e?.message || "Lỗi máy chủ" });
+  }
+};
+
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    await verifyOtpSvc(req.body);
+    return res.status(200).json({ message: "Xác thực OTP thành công" });
+  } catch (e: any) {
+    return res
+      .status(e?.status || 500)
+      .json({ message: e?.message || "Lỗi máy chủ" });
   }
 };

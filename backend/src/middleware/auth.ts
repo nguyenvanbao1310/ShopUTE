@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
-const JWT_SECRET = "your_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET; // bạn nên cho vào process.env
+if (!JWT_SECRET) {
+  throw new Error("Missing JWT_SECRET in environment variables");
+}
 
 export interface AuthRequest extends Request {
   user?: any;
