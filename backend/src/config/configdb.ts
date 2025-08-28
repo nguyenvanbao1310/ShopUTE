@@ -1,6 +1,11 @@
 import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+dotenv.config();
 
-const sequelize = new Sequelize("shopute", "root", "DuHoangHuy@abc1", {
+const DB_PASS= process.env.DB_PASS;
+
+const sequelize = new Sequelize("shopute", "root", DB_PASS, {
+
   host: "localhost",
   dialect: "mysql",
   logging: false,

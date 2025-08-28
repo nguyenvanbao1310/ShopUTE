@@ -1,16 +1,22 @@
 import express, { Request, Response } from "express";
 import { connectDB } from "./config/configdb"; // đường dẫn tới file db.ts
 import authRoutes from "./routes/authRoutes";
+import dotenv from "dotenv";
+import cors from "cors";
 import userRoutes from "./routes/userRoutes"; 
-import dotenv from 'dotenv';
+
 import authForgotRoutes from "./routes/authForgotRoutes";
 dotenv.config();
-
 
 const app = express();
 const PORT = process.env.PORT || 8088;
 
-// Middleware parse JSON body (PHẢI đặt trước các route)
+app.use(
+  cors({
+    origin: "http://localhost:3000", // frontend URL
+    credentials: true, // nếu cần gửi cookie
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
