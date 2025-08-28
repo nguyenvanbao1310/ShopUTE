@@ -67,11 +67,13 @@ const Login: FC = () => {
             />
 
             <button
-              className="text-green-600 mb-6 hover:underline bg-transparent border-0 p-0 cursor-pointer"
-              onClick={() => console.log("Forgot password clicked")}
-            >
-              Forgot password?
-            </button>
+  type="button"
+  className="text-green-600 mb-6 hover:underline bg-transparent border-0 p-0 cursor-pointer"
+  onClick={() => navigate("/forgot-password")}
+>
+  Forgot password?
+</button>
+
 
             <button
               type="submit"

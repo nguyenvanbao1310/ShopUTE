@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes"; 
 
+import authForgotRoutes from "./routes/authForgotRoutes";
 dotenv.config();
 
 const app = express();
@@ -16,6 +17,12 @@ app.use(
     credentials: true, // nếu cần gửi cookie
   })
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/auth", authForgotRoutes);
+
+
 app.use(express.json());
 app.use("/api/", authRoutes);
 app.use("/api/users", userRoutes); // thêm dòng này
