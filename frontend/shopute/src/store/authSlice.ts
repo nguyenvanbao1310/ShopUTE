@@ -6,6 +6,7 @@ interface AuthState {
   token: string | null;
   loading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
 }
 
 const initialState: AuthState = {
@@ -13,6 +14,7 @@ const initialState: AuthState = {
   token: null,
   loading: false,
   error: null,
+  isAuthenticated: false,
 };
 
 // Async thunk login
@@ -44,6 +46,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.error = null;
+      state.isAuthenticated = false;
     },
   },
   extraReducers: (builder) => {
@@ -56,10 +59,12 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.isAuthenticated = false;
       });
   },
 });
