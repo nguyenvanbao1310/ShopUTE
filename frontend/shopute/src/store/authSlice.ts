@@ -35,47 +35,51 @@ export const loginUser = createAsyncThunk(
     }
   }
 );
-export const sendOtp = createAsyncThunk(
+// Gửi OTP, server trả về message: string
+export const sendOtp = createAsyncThunk<string, string>(
   "auth/sendOtp",
-  async (email: string, thunkAPI) => {
+  async (email, thunkAPI) => {
     try {
       const res = await axios.post("http://localhost:8088/api/auth/forgot-password", { email });
-      return res.data.message;
+      return res.data.message as string;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || "Send OTP failed");
     }
   }
 );
 
-export const verifyOtp = createAsyncThunk(
+// Verify OTP, server trả về resetToken: string
+export const verifyOtp = createAsyncThunk<string, { email: string; otp: string }>(
   "auth/verifyOtp",
-  async ({ email, otp }: { email: string; otp: string }, thunkAPI) => {
+  async ({ email, otp }, thunkAPI) => {
     try {
       const res = await axios.post("http://localhost:8088/api/auth/forgot-password/verify-otp", {
         email,
         otp,
       });
-      return res.data.resetToken;
+      return res.data.resetToken as string;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || "Verify OTP failed");
     }
   }
 );
 
-export const resetPassword = createAsyncThunk(
+// Reset password, server trả về message: string
+export const resetPassword = createAsyncThunk<string, { resetToken: string; newPassword: string }>(
   "auth/resetPassword",
-  async ({ resetToken, newPassword }: { resetToken: string; newPassword: string }, thunkAPI) => {
+  async ({ resetToken, newPassword }, thunkAPI) => {
     try {
       const res = await axios.post("http://localhost:8088/api/auth/forgot-password/reset", {
         resetToken,
         newPassword,
       });
-      return res.data.message;
+      return res.data.message as string;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || "Reset password failed");
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: "auth",
