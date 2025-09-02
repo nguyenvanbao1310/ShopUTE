@@ -16,7 +16,7 @@ const Login: FC = () => {
             LAPTOP-UTESHOP
           </h2>
           <p className="text-gray-600 text-center max-w-xs">
-            Experience Performance and Reliability with LAPTOP-UTESHOP"
+            Experience Performance and Reliability with LAPTOP-UTESHOP
           </p>
         </div>
 
