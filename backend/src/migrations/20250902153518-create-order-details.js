@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("OrderDetails", {
+    await queryInterface.createTable("order_details", {
       id: { type: Sequelize.INTEGER, allowNull: false, autoIncrement: true, primaryKey: true },
       orderId: {
         type: Sequelize.INTEGER, allowNull: false,
@@ -15,7 +15,6 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "RESTRICT"
       },
-      price: { type: Sequelize.DECIMAL(12,2), allowNull: false },
       quantity: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 1 },
       subtotal: { type: Sequelize.DECIMAL(14,2), allowNull: false },
       createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn("NOW") },
@@ -23,6 +22,6 @@ module.exports = {
     });
   },
   async down(queryInterface) {
-    return queryInterface.dropTable("OrderDetails");
+    return queryInterface.dropTable("order_details");
   }
 };

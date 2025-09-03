@@ -6,7 +6,6 @@ module.exports = {
       name: { type: Sequelize.STRING(255), allowNull: false },
       description: { type: Sequelize.TEXT, allowNull: true },
       price: { type: Sequelize.DECIMAL(12,2), allowNull: false },
-      originalPrice: { type: Sequelize.DECIMAL(12,2), allowNull: true },
       viewCount: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 0 },
       stock: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 0 },
       status: { type: Sequelize.ENUM("ACTIVE","INACTIVE"), allowNull: false, defaultValue: "ACTIVE" },

@@ -38,7 +38,6 @@ ProductImage.init(
     tableName: "product_images",
     modelName: "ProductImage",
     timestamps: true,
-    underscored: true,
   }
 );
 
