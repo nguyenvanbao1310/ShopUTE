@@ -17,8 +17,9 @@ function App() {
         {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<UserProfile />} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/verify-otp" element={<VerifyOTP/>} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/home" element={<Home />} />
       </Routes>
     </BrowserRouter>
   );

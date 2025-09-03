@@ -1,9 +1,10 @@
 import express, { Request, Response } from "express";
+import path from "path";
 import { connectDB } from "./config/configdb"; // đường dẫn tới file db.ts
 import authRoutes from "./routes/authRoutes";
 import dotenv from "dotenv";
 import cors from "cors";
-import userRoutes from "./routes/userRoutes"; 
+import userRoutes from "./routes/userRoutes";
 import productRoutes from "./routes/productRoutes";
 import authForgotRoutes from "./routes/authForgotRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
@@ -14,6 +15,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8088;
+
+app.use("/images", express.static(path.join(process.cwd(), "public/images")));
 
 associateModels();
 
@@ -27,7 +30,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authForgotRoutes);
-
 
 app.use(express.json());
 app.use("/api/", authRoutes);
