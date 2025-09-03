@@ -6,7 +6,6 @@ export interface ProductAttributes {
   name: string;
   description?: string | null;
   price: string;
-  originalPrice?: string | null;
   viewCount: number;
   stock: number;
   status: "ACTIVE" | "INACTIVE";
@@ -28,7 +27,6 @@ export interface ProductCreationAttributes
     ProductAttributes,
     | "id"
     | "description"
-    | "originalPrice"
     | "viewCount"
     | "stock"
     | "status"
@@ -45,7 +43,6 @@ class Product
   public name!: string;
   public description!: string | null;
   public price!: string;
-  public originalPrice!: string | null;
   public viewCount!: number;
   public stock!: number;
   public status!: "ACTIVE" | "INACTIVE";
@@ -71,8 +68,11 @@ Product.init(
     },
     name: { type: DataTypes.STRING(255), allowNull: false },
     description: { type: DataTypes.TEXT, allowNull: true },
-    price: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
-    originalPrice: { type: DataTypes.DECIMAL(12, 2), allowNull: true },
+    price: {
+      type: DataTypes.DECIMAL(15, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
     viewCount: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,

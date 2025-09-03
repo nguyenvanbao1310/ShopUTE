@@ -3,6 +3,7 @@ import Product from "./Product";
 import ProductImage from "./ProductImage";
 import Order from "./Order";
 import OrderDetail from "./OrderDetail";
+import ProductDiscount from "./ProductDiscount";
 
 export function associateModels() {
   // Category ↔ Product
@@ -20,6 +21,13 @@ export function associateModels() {
   // Product ↔ OrderDetail
   Product.hasMany(OrderDetail, { as: "OrderDetails", foreignKey: "productId" });
   OrderDetail.belongsTo(Product, { as: "Product", foreignKey: "productId" });
+
+  // Product ↔ ProductDiscount
+  Product.hasOne(ProductDiscount, { as: "discount", foreignKey: "productId" });
+  ProductDiscount.belongsTo(Product, {
+    as: "product",
+    foreignKey: "productId",
+  });
 }
 
-export { Category, Product, ProductImage, Order, OrderDetail };
+export { Category, Product, ProductImage, Order, OrderDetail, ProductDiscount };

@@ -5,9 +5,8 @@ export interface OrderDetailAttributes {
   id: number;
   orderId: number;
   productId: number;
-  price: string;     // đơn giá tại thời điểm mua
-  quantity: number;  // số lượng
-  subtotal: string;  // price * quantity
+  quantity: number; 
+  subtotal: string; 
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -23,7 +22,6 @@ class OrderDetail
   public id!: number;
   public orderId!: number;
   public productId!: number;
-  public price!: string;
   public quantity!: number;
   public subtotal!: string;
 
@@ -33,11 +31,18 @@ class OrderDetail
 
 OrderDetail.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     orderId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
     productId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
-    price: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
-    quantity: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 1 },
+    quantity: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: false,
+      defaultValue: 1,
+    },
     subtotal: { type: DataTypes.DECIMAL(14, 2), allowNull: false },
   },
   {
