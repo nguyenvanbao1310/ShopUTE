@@ -1,5 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { Profile } from "../types/user";
 import axios from "axios";
+
+export interface User extends Profile {
+  id: number;
+  role: string;
+}
 
 interface AuthState {
   user: any | null;
@@ -7,6 +13,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  pendingRegToken: string | null;
 }
 
 const initialState: AuthState = {
@@ -15,6 +22,7 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   isAuthenticated: false,
+  pendingRegToken: null,
 };
 
 // Async thunk login
@@ -37,14 +45,70 @@ export const loginUser = createAsyncThunk(
     }
   }
 );
+
+export const registerUser = createAsyncThunk(
+  "auth/registerUser",
+  async (
+    payload: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      password: string;
+      confirmPassword: string;
+    },
+    thunkAPI
+  ) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8088/api/register",
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      // BE trả { message, regToken }
+      return res.data as { message: string; regToken: string };
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Register failed";
+      // In lỗi chi tiết ra console
+      console.error("[registerUser] error:", msg, err?.response?.data || err);
+      return thunkAPI.rejectWithValue(msg);
+    }
+  }
+);
+
+export const verifyRegisterOtp = createAsyncThunk(
+  "auth/verifyRegisterOtp",
+  async ({ regToken, otp }: { regToken: string; otp: Number }, thunkAPI) => {
+    try {
+      const res = await axios.post("http://localhost:8088/api/verify-otp", {
+        regToken,
+        otp,
+      });
+      return res.data as { message: string; user: any };
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Verify OTP failed"
+      );
+    }
+  }
+);
+
 export const sendOtp = createAsyncThunk(
   "auth/sendOtp",
   async (email: string, thunkAPI) => {
     try {
-      const res = await axios.post("http://localhost:8088/api/auth/forgot-password", { email });
+      const res = await axios.post(
+        "http://localhost:8088/api/auth/forgot-password",
+        { email }
+      );
       return res.data.message;
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || "Send OTP failed");
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Send OTP failed"
+      );
     }
   }
 );
@@ -53,28 +117,41 @@ export const verifyOtp = createAsyncThunk(
   "auth/verifyOtp",
   async ({ email, otp }: { email: string; otp: string }, thunkAPI) => {
     try {
-      const res = await axios.post("http://localhost:8088/api/auth/forgot-password/verify-otp", {
-        email,
-        otp,
-      });
+      const res = await axios.post(
+        "http://localhost:8088/api/auth/forgot-password/verify-otp",
+        {
+          email,
+          otp,
+        }
+      );
       return res.data.resetToken;
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || "Verify OTP failed");
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Verify OTP failed"
+      );
     }
   }
 );
 
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
-  async ({ resetToken, newPassword }: { resetToken: string; newPassword: string }, thunkAPI) => {
+  async (
+    { resetToken, newPassword }: { resetToken: string; newPassword: string },
+    thunkAPI
+  ) => {
     try {
-      const res = await axios.post("http://localhost:8088/api/auth/forgot-password/reset", {
-        resetToken,
-        newPassword,
-      });
+      const res = await axios.post(
+        "http://localhost:8088/api/auth/forgot-password/reset",
+        {
+          resetToken,
+          newPassword,
+        }
+      );
       return res.data.message;
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || "Reset password failed");
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || "Reset password failed"
+      );
     }
   }
 );
@@ -105,8 +182,43 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-		state.isAuthenticated = false;
+        state.isAuthenticated = false;
       })
+      // REGISTER (send OTP)
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.pendingRegToken = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.pendingRegToken = action.payload.regToken; // lưu regToken để verify
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.pendingRegToken = null;
+        // In lỗi ra console ở reducer (debug nhanh giao diện)
+        console.error("[registerUser.rejected]:", action.payload);
+      })
+
+      // VERIFY OTP (register)
+      .addCase(verifyRegisterOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyRegisterOtp.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.pendingRegToken = null; 
+        state.token = null;
+        state.isAuthenticated = false;
+      })
+      .addCase(verifyRegisterOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
       // Thêm các case cho forgot password
       .addCase(sendOtp.pending, (state) => {
         state.loading = true;
