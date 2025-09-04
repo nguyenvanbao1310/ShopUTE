@@ -10,7 +10,7 @@ import {
 import sequelize from "../config/configdb";
 
 import ProductModel from "../models/Product";
-import Category from "../models/Category";
+import CategoryModel from "../models/Category";
 import OrderDetailModel from "../models/OrderDetail";
 import ProductDiscountModel from "../models/ProductDiscount";
 import ProductImageModel from "../models/ProductImage";
@@ -18,7 +18,7 @@ import RatingModel from "../models/rating";
 
 
 const Product = ProductModel as any;
-//const Category = CategoryModel as any;
+const Category = CategoryModel as any;
 const OrderDetail = OrderDetailModel as any;
 const ProductDiscount = ProductDiscountModel as any;
 const ProductImage = ProductImageModel as any;
