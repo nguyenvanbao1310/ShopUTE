@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/swiper": "^5.4.3",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
@@ -21,7 +22,8 @@
     "mysql2": "^3.14.3",
     "nodemailer": "^7.0.5",
     "sequelize": "^6.37.7",
-    "sequelize-typescript": "^2.1.6"
+    "sequelize-typescript": "^2.1.6",
+    "swiper": "^11.2.10"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

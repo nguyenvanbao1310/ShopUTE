@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import ProductCard from "../ProductCard";
+import { Link } from "react-router-dom";
 
 interface Product {
   id: number;
@@ -28,7 +29,9 @@ const FeaturedProducts: FC = () => {
       <h2 className="text-2xl font-bold mb-6">New-Products</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} {...product} />
+          <Link key={product.id} to={`/product/${product.id}`}>
+            <ProductCard {...product} />
+          </Link>
         ))}
       </div>
       <div className="text-center mt-6">

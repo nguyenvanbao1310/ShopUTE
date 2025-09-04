@@ -8,6 +8,7 @@ import {
   getAllProductsSvc,
   createProductSvc,
   updateProductSvc,
+  getProductsByCategoryNameSvc,
 } from "../services/productService";
 import { AuthRequest } from "../middleware/auth";
 
@@ -96,3 +97,21 @@ export async function updateProduct(req: AuthRequest, res: Response) {
       .json({ message: e?.message || "Internal Server Error" });
   }
 }
+
+// Lấy sản phẩm theo danh mục (case-insensitive)
+export async function getProductsByCategory(req: AuthRequest, res: Response) {
+  try {
+    const categoryName = req.params.categoryName;
+    if (!categoryName) {
+      return res.status(400).json({ message: "Category name is required" });
+    }
+
+    const data = await getProductsByCategoryNameSvc(categoryName);
+    res.json(data);
+  } catch (e: any) {
+    res
+      .status(e?.status || 500)
+      .json({ message: e?.message || "Internal Server Error" });
+  }
+}
+

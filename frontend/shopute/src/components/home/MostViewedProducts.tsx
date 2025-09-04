@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 interface Product {
   id: number;
@@ -35,19 +36,21 @@ const MostViewedProducts: FC = () => {
               key={p.id}
               className="flex items-center border p-3 rounded-lg cursor-pointer hover:shadow-lg hover:-translate-y-1 transition"
             >
+              <Link to={`/product/${p.id}`}>
               {/* Ảnh */}
               <img
                 src={p.thumbnailUrl}
                 alt={p.name}
                 className="w-16 h-16 object-contain"
               />
-
+              </Link>
               {/* Thông tin */}
               <div className="ml-3">
+                <Link to={`/product/${p.id}`}>
                 <h3 className="text-sm font-medium text-gray-800 line-clamp-2">
                   {p.name}
                 </h3>
-
+                </Link>
                 {/* Giá */}
                 <div className="flex items-center mt-1">
                   {parseFloat(p.discountPercent) > 0 && (
