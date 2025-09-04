@@ -7,6 +7,8 @@ import CategoryList from "../components/home/CategoryList";
 import FeaturedProducts from "../components/home/NewProducts";
 import BestSellProducts from "../components/home/BestSellProducts";
 import MostViewedProducts from "../components/home/MostViewedProducts";
+import TopDiscountProducts from "../components/home/TopDiscountProducts";
+import Navbar from "../components/Navbar";
 
 const slides = [
   {
@@ -61,6 +63,7 @@ const Home: FC = () => {
       <FeaturedProducts />
       <BestSellProducts />
       <MostViewedProducts />
+      <TopDiscountProducts />
     </Layout>
   );
 };
