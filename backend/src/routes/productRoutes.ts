@@ -9,6 +9,7 @@ import {
   getAllProducts,
   createProduct,
   updateProduct,
+  getProductsByCategory,
 } from "../controllers/productControllers";
 import { authMiddleware } from "../middleware/auth";
 
@@ -20,6 +21,7 @@ router.get("/best-sellers", bestSellers); // 06 sản phẩm bán chạy nhất
 router.get("/most-viewed", mostViewed); // 08 sản phẩm xem nhiều
 router.get("/top-discount", topDiscount); // 04 sản phẩm giảm sâu
 router.get("/all", getAllProducts);
+router.get('/category/:categoryName', getProductsByCategory);
 
 // Create / Update
 router.post("/", authMiddleware, createProduct);

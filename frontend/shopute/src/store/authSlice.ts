@@ -98,13 +98,13 @@ export const verifyRegisterOtp = createAsyncThunk(
 
 export const sendOtp = createAsyncThunk(
   "auth/sendOtp",
-  async (email: string, thunkAPI) => {
+  async (email, thunkAPI) => {
     try {
       const res = await axios.post(
         "http://localhost:8088/api/auth/forgot-password",
         { email }
       );
-      return res.data.message;
+      return res.data.message as string;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data?.message || "Send OTP failed"
@@ -113,9 +113,10 @@ export const sendOtp = createAsyncThunk(
   }
 );
 
-export const verifyOtp = createAsyncThunk(
+// Verify OTP, server trả về resetToken: string
+export const verifyOtp = createAsyncThunk<string, { email: string; otp: string }>(
   "auth/verifyOtp",
-  async ({ email, otp }: { email: string; otp: string }, thunkAPI) => {
+  async ({ email, otp }, thunkAPI) => {
     try {
       const res = await axios.post(
         "http://localhost:8088/api/auth/forgot-password/verify-otp",
@@ -124,7 +125,7 @@ export const verifyOtp = createAsyncThunk(
           otp,
         }
       );
-      return res.data.resetToken;
+      return res.data.resetToken as string;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data?.message || "Verify OTP failed"
@@ -133,7 +134,8 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
-export const resetPassword = createAsyncThunk(
+// Reset password, server trả về message: string
+export const resetPassword = createAsyncThunk<string, { resetToken: string; newPassword: string }>(
   "auth/resetPassword",
   async (
     { resetToken, newPassword }: { resetToken: string; newPassword: string },
@@ -147,7 +149,7 @@ export const resetPassword = createAsyncThunk(
           newPassword,
         }
       );
-      return res.data.message;
+      return res.data.message as string;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data?.message || "Reset password failed"
@@ -155,6 +157,7 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: "auth",
