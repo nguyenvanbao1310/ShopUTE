@@ -8,6 +8,8 @@ import UserProfile from "./pages/UserProfile";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import VerifyOTP from "./pages/VerifyOtp";
+import CategoryPage from "./components/home/CategoryPage";
+import ProductDetail from "./components/home/ProductDetail";
 
 function App() {
   return (
@@ -17,8 +19,11 @@ function App() {
         {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<UserProfile />} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/verify-otp" element={<VerifyOTP/>} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/categories/:categoryId" element={<CategoryPage />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
     </BrowserRouter>
   );

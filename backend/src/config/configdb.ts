@@ -4,7 +4,7 @@ dotenv.config();
 
 const DB_PASS= process.env.DB_PASS;
 
-const sequelize = new Sequelize("shopute", "root", DB_PASS, {
+const sequelize = new Sequelize("shopute", "root", "DuHoangHuy@abc1", {
 
   host: "localhost",
   dialect: "mysql",

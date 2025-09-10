@@ -6,7 +6,6 @@ import OrderDetail from "./OrderDetail";
 import ProductDiscount from "./ProductDiscount";
 
 export function associateModels() {
-  // Category ↔ Category (Self-referencing relationship)
   Category.belongsTo(Category, {
     as: "parent",
     foreignKey: "parentId",

@@ -3,6 +3,7 @@ import {
   Transaction,
   col,
   fn,
+  Op,
   literal,
   type Includeable,
 } from "sequelize";
@@ -13,12 +14,16 @@ import CategoryModel from "../models/Category";
 import OrderDetailModel from "../models/OrderDetail";
 import ProductDiscountModel from "../models/ProductDiscount";
 import ProductImageModel from "../models/ProductImage";
+import RatingModel from "../models/rating";
+
 
 const Product = ProductModel as any;
 const Category = CategoryModel as any;
 const OrderDetail = OrderDetailModel as any;
 const ProductDiscount = ProductDiscountModel as any;
 const ProductImage = ProductImageModel as any;
+const Rating = RatingModel as any;
+
 
 // ===== Common attributes (alias rõ) =====
 const baseAttrs = [
@@ -270,6 +275,44 @@ export async function getAllProductsSvc() {
   return Product.findAll({
     attributes: baseAttrs,
     include: buildIncludeCommon(),
+    order: [["createdAt", "DESC"]],
+  });
+}
+export async function getProductsByCategoryNameSvc(categoryName: string) {
+  return Product.findAll({
+    where: {
+      status: "ACTIVE",
+    },
+    include: [
+      {
+        model: Category,
+        as: "Category",
+        attributes: ["id", "name", "parentId"],
+        where: {
+          name: { [Op.iLike]: categoryName }, // so sánh tên category, không phân biệt hoa/thường
+        },
+      },
+      {
+        model: ProductImage,
+        as: "Images",
+        attributes: ["id", "url", "position"],
+      },
+      {
+        model: Rating,
+        as: "Ratings",
+        attributes: [],
+      },
+    ],
+    attributes: {
+      include: [
+        [fn("COALESCE", fn("AVG", col("Ratings.rating")), 0), "averageRating"],
+      ],
+    },
+    group: [
+      "Product.id",
+      "Category.id",
+      "Images.id", // group để AVG hoạt động đúng
+    ],
     order: [["createdAt", "DESC"]],
   });
 }

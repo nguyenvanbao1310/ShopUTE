@@ -9,17 +9,19 @@ import {
   getAllProducts,
   createProduct,
   updateProduct,
+  getProductsByCategory,
 } from "../controllers/productControllers";
 import { authMiddleware } from "../middleware/auth";
 
 const router = Router();
 
 // Lists
-router.get("/newest", authMiddleware, newestProducts);       // 08 sản phẩm mới nhất
-router.get("/best-sellers", authMiddleware, bestSellers);    // 06 sản phẩm bán chạy nhất
-router.get("/most-viewed", authMiddleware, mostViewed);      // 08 sản phẩm xem nhiều
-router.get("/top-discount", authMiddleware, topDiscount);    // 04 sản phẩm giảm sâu
-router.get("/all", authMiddleware, getAllProducts);
+router.get("/newest", newestProducts); // 08 sản phẩm mới nhất
+router.get("/best-sellers", bestSellers); // 06 sản phẩm bán chạy nhất
+router.get("/most-viewed", mostViewed); // 08 sản phẩm xem nhiều
+router.get("/top-discount", topDiscount); // 04 sản phẩm giảm sâu
+router.get("/all", getAllProducts);
+router.get('/category/:categoryName', getProductsByCategory);
 
 // Create / Update
 router.post("/", authMiddleware, createProduct);
