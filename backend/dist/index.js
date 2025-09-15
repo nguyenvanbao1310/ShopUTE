@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const path_1 = __importDefault(require("path"));
 const configdb_1 = require("./config/configdb"); // đường dẫn tới file db.ts
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -17,6 +18,7 @@ const models_1 = require("./models");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8088;
+app.use("/images", express_1.default.static(path_1.default.join(process.cwd(), "public/images")));
 (0, models_1.associateModels)();
 app.use((0, cors_1.default)({
     origin: "http://localhost:3000", // frontend URL

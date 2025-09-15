@@ -4,6 +4,9 @@ import ProductImage from "./ProductImage";
 import Order from "./Order";
 import OrderDetail from "./OrderDetail";
 import ProductDiscount from "./ProductDiscount";
+import Cart from "./Cart";
+import User from "./User";
+import CartItem from "./CartItem"
 
 export function associateModels() {
   Category.belongsTo(Category, {
@@ -32,6 +35,20 @@ export function associateModels() {
     as: "product",
     foreignKey: "productId",
   });
+
+  // Cart ↔ User
+  Cart.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+  // CartItem ↔ Cart
+  CartItem.belongsTo(Cart, { foreignKey: "cartId", as: "cart" });
+  Cart.hasMany(CartItem, {
+    foreignKey: "cartId",
+    as: "items",
+    onDelete: "CASCADE",
+  });
+
+  // CartItem ↔ Product
+  CartItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
 }
 
-export { Category, Product, ProductImage, Order, OrderDetail, ProductDiscount };
+export { Category, Product, ProductImage, Order, OrderDetail, ProductDiscount, User, Cart, CartItem };

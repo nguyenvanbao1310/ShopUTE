@@ -16,7 +16,7 @@ const ForgotPassword: FC = () => {
   const [newPassword, setNewPassword] = useState("");
 
   const handleSendOtp = async () => {
-    const result = await dispatch(sendOtp(email));
+    const result = await dispatch(sendOtp());
     if (sendOtp.fulfilled.match(result)) setStep(2);
   };
 
