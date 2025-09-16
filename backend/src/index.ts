@@ -9,6 +9,7 @@ import productRoutes from "./routes/productRoutes";
 import authForgotRoutes from "./routes/authForgotRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import productImageRoutes from "./routes/productImageRoutes";
+import cartRoutes from "./routes/cartRoutes";
 
 import { associateModels } from "./models";
 dotenv.config();
@@ -37,6 +38,7 @@ app.use("/api/users", userRoutes); // thêm dòng này
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/product-images", productImageRoutes);
+app.use("/api/cart", cartRoutes);
 // Kết nối DB
 connectDB();
 
