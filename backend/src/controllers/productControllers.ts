@@ -99,19 +99,25 @@ export async function updateProduct(req: AuthRequest, res: Response) {
 }
 
 // Lấy sản phẩm theo danh mục (case-insensitive)
-export async function getProductsByCategory(req: AuthRequest, res: Response) {
+export const getProductsByCategory = async (req: Request, res: Response) => {
   try {
-    const categoryName = req.params.categoryName;
+    const { categoryName } = req.params;
     if (!categoryName) {
       return res.status(400).json({ message: "Category name is required" });
     }
 
-    const data = await getProductsByCategoryNameSvc(categoryName);
-    res.json(data);
-  } catch (e: any) {
-    res
-      .status(e?.status || 500)
-      .json({ message: e?.message || "Internal Server Error" });
-  }
-}
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 12;
 
+    const { products, pagination } = await getProductsByCategoryNameSvc(categoryName, page, limit);
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: "No products found in this category" });
+    }
+
+    res.json({ products, pagination });
+  } catch (error) {
+    console.error("Error in getProductsByCategory:", error);
+    res.status(500).json({ message: "Error fetching products", error: error instanceof Error ? error.message : "Unknown error" });
+  }
+};

@@ -278,8 +278,10 @@ export async function getAllProductsSvc() {
     order: [["createdAt", "DESC"]],
   });
 }
-export async function getProductsByCategoryNameSvc(categoryName: string) {
-  return Product.findAll({
+export async function getProductsByCategoryNameSvc(categoryName: string, page: number = 1, limit: number = 12) {
+  const offset = (page - 1) * limit;
+
+  const result = await Product.findAndCountAll({
     where: {
       status: "ACTIVE",
     },
@@ -289,7 +291,9 @@ export async function getProductsByCategoryNameSvc(categoryName: string) {
         as: "Category",
         attributes: ["id", "name", "parentId"],
         where: {
-          name: { [Op.iLike]: categoryName }, // so sánh tên category, không phân biệt hoa/thường
+          name: {
+            [Op.like]: `%${categoryName}%`, // Sử dụng LIKE thay ILIKE
+          },
         },
       },
       {
@@ -300,19 +304,51 @@ export async function getProductsByCategoryNameSvc(categoryName: string) {
       {
         model: Rating,
         as: "Ratings",
-        attributes: [],
+        attributes: [], // Chỉ dùng để tính trung bình
       },
     ],
     attributes: {
       include: [
         [fn("COALESCE", fn("AVG", col("Ratings.rating")), 0), "averageRating"],
+        "id",
+        "name",
+        "description",
+        "price",
+        "viewCount",
+        "stock",
+        "status",
+        "thumbnailUrl",
+        "categoryId",
+        "brand",
+        "cpu",
+        "ram",
+        "storage",
+        "gpu",
+        "screen",
+        "createdAt",
+        "updatedAt",
       ],
     },
-    group: [
-      "Product.id",
-      "Category.id",
-      "Images.id", // group để AVG hoạt động đúng
-    ],
+    group: ["Product.id", "Category.id", "Images.id", "Ratings.id"],
     order: [["createdAt", "DESC"]],
+    limit,
+    offset,
+    distinct: true,
+    subQuery: false,
   });
+
+  const totalProducts = result.count;
+  const totalPages = Math.ceil(totalProducts / limit);
+  const products = result.rows;
+
+  return {
+    products,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalProducts,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+    },
+  };
 }
