@@ -3,11 +3,11 @@ import sequelize from "../config/configdb";
 
 export interface OrderAttributes {
   id: number;
-  userId: number | null;          // nếu có bảng Users; tạm cho phép null
-  code: string;                   // mã đơn (unique)
-  totalAmount: string;            // DECIMAL -> string
+  userId: number | null; // nếu có bảng Users; tạm cho phép null
+  code: string; // mã đơn (unique)
+  totalAmount: string; // DECIMAL -> string
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "SHIPPED" | "COMPLETED";
-  paymentMethod?: string | null;  // COD, VNPAY, MOMO...
+  paymentMethod?: string | null; // COD, VNPAY, MOMO...
   paymentStatus?: "UNPAID" | "PAID" | "REFUNDED";
   note?: string | null;
 
@@ -18,7 +18,13 @@ export interface OrderAttributes {
 export interface OrderCreationAttributes
   extends Optional<
     OrderAttributes,
-    "id" | "userId" | "paymentMethod" | "paymentStatus" | "note" | "createdAt" | "updatedAt"
+    | "id"
+    | "userId"
+    | "paymentMethod"
+    | "paymentStatus"
+    | "note"
+    | "createdAt"
+    | "updatedAt"
   > {}
 
 class Order
@@ -29,7 +35,12 @@ class Order
   public userId!: number | null;
   public code!: string;
   public totalAmount!: string;
-  public status!: "PENDING" | "CONFIRMED" | "CANCELLED" | "SHIPPED" | "COMPLETED";
+  public status!:
+    | "PENDING"
+    | "CONFIRMED"
+    | "CANCELLED"
+    | "SHIPPED"
+    | "COMPLETED";
   public paymentMethod!: string | null;
   public paymentStatus!: "UNPAID" | "PAID" | "REFUNDED";
   public note!: string | null;
@@ -40,12 +51,22 @@ class Order
 
 Order.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
     code: { type: DataTypes.STRING(30), allowNull: false, unique: true },
     totalAmount: { type: DataTypes.DECIMAL(14, 2), allowNull: false },
     status: {
-      type: DataTypes.ENUM("PENDING", "CONFIRMED", "CANCELLED", "SHIPPED", "COMPLETED"),
+      type: DataTypes.ENUM(
+        "PENDING",
+        "CONFIRMED",
+        "CANCELLED",
+        "SHIPPED",
+        "COMPLETED"
+      ),
       allowNull: false,
       defaultValue: "PENDING",
     },
