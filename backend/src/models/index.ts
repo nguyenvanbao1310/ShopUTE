@@ -4,6 +4,9 @@ import ProductImage from "./ProductImage";
 import Order from "./Order";
 import OrderDetail from "./OrderDetail";
 import ProductDiscount from "./ProductDiscount";
+import Cart from "./Cart";
+import User from "./User";
+import CartItem from "./CartItem";
 
 export function associateModels() {
   Category.belongsTo(Category, {
@@ -32,6 +35,41 @@ export function associateModels() {
     as: "product",
     foreignKey: "productId",
   });
+
+  // ===== Associations cho Cart =====
+  User.hasOne(Cart, {
+    foreignKey: "userId",
+    as: "cart",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  });
+  Cart.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+  Cart.hasMany(CartItem, {
+    foreignKey: "cartId",
+    as: "items",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+  });
+  CartItem.belongsTo(Cart, { foreignKey: "cartId", as: "cart" });
+
+  Product.hasMany(CartItem, {
+    foreignKey: "productId",
+    as: "cartItems",
+    onDelete: "RESTRICT",
+    onUpdate: "CASCADE",
+  });
+  CartItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
 }
 
-export { Category, Product, ProductImage, Order, OrderDetail, ProductDiscount };
+export {
+  Category,
+  Product,
+  ProductImage,
+  Order,
+  OrderDetail,
+  ProductDiscount,
+  User,
+  Cart,
+  CartItem,
+};
