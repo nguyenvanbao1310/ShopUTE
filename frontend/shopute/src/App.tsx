@@ -12,6 +12,7 @@ import AccountLayout from "./pages/account/AccountLayout";
 import Profile from "./pages/account/Profile";
 import Address from "./pages/account/Address";
 import ChangePassword from "./pages/account/ChangePassword";
+import OrderList from "./components/OrderList";
 function App() {
   return (
     <BrowserRouter>
@@ -19,11 +20,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
         <Route path="/" element={<Home />} />
-         <Route path="/account" element={<AccountLayout />}>
+        <Route path="/account" element={<AccountLayout />}>
           <Route path="profile" element={<Profile />} />
           <Route path="address" element={<Address />} />
           <Route path="change-password" element={<ChangePassword />} />
         </Route>
+        <Route path="orders" element={<OrderList />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/home" element={<Home />} />

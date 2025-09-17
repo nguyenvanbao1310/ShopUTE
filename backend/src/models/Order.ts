@@ -6,11 +6,18 @@ export interface OrderAttributes {
   userId: number | null; // nếu có bảng Users; tạm cho phép null
   code: string; // mã đơn (unique)
   totalAmount: string; // DECIMAL -> string
-  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "SHIPPED" | "COMPLETED";
+  status:
+    | "PENDING"
+    | "CONFIRMED"
+    | "PREPARING"
+    | "CANCELLED"
+    | "SHIPPED"
+    | "COMPLETED"
+    | "CANCEL_REQUESTED";
   paymentMethod?: string | null; // COD, VNPAY, MOMO...
   paymentStatus?: "UNPAID" | "PAID" | "REFUNDED";
   note?: string | null;
-
+  deliveryAddress?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -25,6 +32,7 @@ export interface OrderCreationAttributes
     | "note"
     | "createdAt"
     | "updatedAt"
+    | "deliveryAddress"
   > {}
 
 class Order
@@ -38,13 +46,15 @@ class Order
   public status!:
     | "PENDING"
     | "CONFIRMED"
+    | "PREPARING"
     | "CANCELLED"
     | "SHIPPED"
-    | "COMPLETED";
+    | "COMPLETED"
+    | "CANCEL_REQUESTED";
   public paymentMethod!: string | null;
   public paymentStatus!: "UNPAID" | "PAID" | "REFUNDED";
   public note!: string | null;
-
+  public deliveryAddress!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -63,9 +73,11 @@ Order.init(
       type: DataTypes.ENUM(
         "PENDING",
         "CONFIRMED",
+        "PREPARING",
         "CANCELLED",
         "SHIPPED",
-        "COMPLETED"
+        "COMPLETED",
+        "CANCEL_REQUESTED"
       ),
       allowNull: false,
       defaultValue: "PENDING",
@@ -77,6 +89,10 @@ Order.init(
       defaultValue: "UNPAID",
     },
     note: { type: DataTypes.TEXT, allowNull: true },
+    deliveryAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
   },
   {
     sequelize,
