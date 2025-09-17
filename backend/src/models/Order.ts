@@ -10,7 +10,7 @@ export interface OrderAttributes {
   paymentMethod?: string | null;  // COD, VNPAY, MOMO...
   paymentStatus?: "UNPAID" | "PAID" | "REFUNDED";
   note?: string | null;
-
+  deliveryAddress?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -18,7 +18,7 @@ export interface OrderAttributes {
 export interface OrderCreationAttributes
   extends Optional<
     OrderAttributes,
-    "id" | "userId" | "paymentMethod" | "paymentStatus" | "note" | "createdAt" | "updatedAt"
+    "id" | "userId" | "paymentMethod" | "paymentStatus" | "note" | "createdAt" | "updatedAt"|"deliveryAddress"
   > {}
 
 class Order
@@ -33,7 +33,7 @@ class Order
   public paymentMethod!: string | null;
   public paymentStatus!: "UNPAID" | "PAID" | "REFUNDED";
   public note!: string | null;
-
+  public deliveryAddress!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -56,6 +56,10 @@ Order.init(
       defaultValue: "UNPAID",
     },
     note: { type: DataTypes.TEXT, allowNull: true },
+    deliveryAddress: { 
+      type: DataTypes.STRING(255), 
+      allowNull: true,
+    },
   },
   {
     sequelize,
