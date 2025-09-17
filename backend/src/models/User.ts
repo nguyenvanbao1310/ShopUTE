@@ -9,6 +9,9 @@ export interface UserAttributes {
   firstName: string;
   lastName: string;
   phone: string;
+  gender?: boolean | null;         
+  birthday?: Date | null;          
+  avatar_url?: string | null;     
   otp?: string | null;
   otpExpire?: Date | null;
   role: "user" | "admin";
@@ -18,7 +21,7 @@ export interface UserAttributes {
 
 // 2. Khai báo attributes khi tạo (id, createdAt, updatedAt sẽ tự sinh)
 export interface UserCreationAttributes
-  extends Optional<UserAttributes, "id" | "createdAt" | "updatedAt"> {}
+  extends Optional<UserAttributes, "id" | "createdAt" | "updatedAt"| "gender" | "birthday" | "avatar_url"> {}
 
 // 3. Tạo class User kế thừa Sequelize Model
 export class User
@@ -31,6 +34,9 @@ export class User
   public firstName!: string;
   public lastName!: string;
   public phone!: string;
+  public gender!: boolean | null;
+  public birthday!: Date | null;
+  public avatar_url!: string | null;
   public otp!: string | null;
   public otpExpire!: Date | null;
   public role!: "user" | "admin";
@@ -68,6 +74,18 @@ User.init(
     phone: {
       type: DataTypes.STRING(20),
       allowNull: false,
+    },
+    gender: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
+    birthday: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    avatar_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
     },
     otp: {
       type: DataTypes.STRING(10),

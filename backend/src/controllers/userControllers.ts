@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { User } from "../models/User"; 
 import userService from "../services/userService";
 import { AuthRequest } from "../middleware/auth";
+import { sendOTPEmail } from "../services/mailer";
 const getInforUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = req.user.id;
@@ -27,23 +28,44 @@ const updateInforUser = async (req: AuthRequest , res: Response, next: NextFunct
     }
 };
 
-
 const changePasswordUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    try {
-    const userId = req.user.id; 
+  try {
+    const userId = req.user.id;
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: "Missing password fields" });
+      return res.status(400).json({ success: false, message: "Missing password fields" });
     }
-    await userService.changePasswordUser(userId, currentPassword, newPassword);
-    return res.status(200).json({ success: true, message: "Password changed successfully" });
-    } catch (error) {
-        next(error);
+    const { otp, email } = await userService.changePasswordUser(userId, currentPassword, newPassword);
+
+    // ✅ Trả response ngay cho FE
+    res.status(200).json({ success: true, message: "OTP sent to your email" });
+
+    // ✅ Gửi mail ngầm, không chặn FE
+    sendOTPEmail(email, otp).catch((err) => {
+      console.error("Send OTP failed:", err);
+    });
+  } catch (error: any) {
+    return res.status(error.status || 500).json({ success: false, message: error.message });
+  }
+};
+
+const confirmChangePassword = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user.id;
+    const { otp, newPassword } = req.body;
+    if (!otp || !newPassword) {
+      return res.status(400).json({ success: false, message: "Missing OTP or newPassword" });
     }
+    const result = await userService.confirmChangePasswordOtp(userId, otp, newPassword);
+    return res.status(200).json({ success: true, message: result.message });
+  } catch (error: any) {
+    return res.status(error.status || 500).json({ success: false, message: error.message });
+  }
 };
 
 export default {
     getInforUser,
     updateInforUser,
     changePasswordUser,
+    confirmChangePassword
 };

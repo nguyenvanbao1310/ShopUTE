@@ -1,0 +1,143 @@
+import { Transaction } from "sequelize";
+import sequelize from "../config/configdb";
+import Order from "../models/Order";
+import OrderDetail from "../models/OrderDetail";
+import Product from "../models/Product";
+import User from "../models/User"
+import type { OrderCreationAttributes } from "../models/Order";
+import type { OrderDetailCreationAttributes } from "../models/OrderDetail";
+import {OrderStatus, PaymentStatus} from "../types/order";
+
+export interface CreateOrderInput extends OrderCreationAttributes {
+  details: Omit<OrderDetailCreationAttributes, "orderId">[];
+} 
+
+export async function createOrder(data : CreateOrderInput ) {
+    const t =  await sequelize.transaction();
+    try {
+        const totalAmount = data.details.reduce((sum ,d) => sum + parseFloat(d.subtotal),0).toFixed(2);
+
+        const order = await Order.create({
+            userId: data.userId ?? null , 
+            code: data.code,
+            totalAmount,
+            status: "PENDING",
+            paymentMethod: data.paymentMethod ?? null,
+            paymentStatus: "UNPAID",
+            note: data.note ?? null,},
+            { transaction: t }
+        );
+        const details =  data.details.map((d) => ({
+            ...d, orderId: order.id,
+        }));
+        await OrderDetail.bulkCreate(details, {transaction: t}) ;
+        await t.commit() ; 
+        return { order, details };
+    } catch (error) {
+        await t.rollback() ;
+        throw error ; 
+    }
+}
+
+export async function payOrderCOD(orderId: number) { 
+    const t =await sequelize.transaction();
+    try {
+        const order = await Order.findByPk(orderId, {transaction: t});
+        if(!order)
+        {
+            throw new Error("Order can't found ");
+        }
+        if(order.paymentMethod !=="COD")
+        {
+            throw new  Error("Payment method isn't COD");
+        }
+        if(order.paymentStatus === "PAID")
+        {
+            throw new Error("Order already paid");
+        }
+        if (order.status === "CANCELLED") {
+            throw new Error("Order has been cancelled");
+        }
+        order.paymentStatus = "PAID";
+        order.status ="COMPLETED";
+        await order.save({transaction:t});
+        await t.commit();
+        return order;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+}
+
+export async function confirmOrder(orderId: number){
+    const t =  await sequelize.transaction();
+    try {
+        const order = await Order.findByPk(orderId, {transaction :t });
+        if(!order)
+        {
+            throw new Error("Order could't find")
+        }
+        if (order.status === OrderStatus.CONFIRMED) {
+            throw new Error("Order has been confirmed");
+        }
+        if(order.status !== OrderStatus.PENDING){
+             throw new Error(`Cannot confirm order in status: ${order.status}`);
+        }
+        order.status = OrderStatus.CONFIRMED;
+            await order.save({transaction: t});
+            await t.commit();
+            return order;
+    } catch (error) {
+        await t.rollback();
+        throw error ;
+    }
+}
+export async function shipOrder(orderId: number) {
+  const t = await sequelize.transaction();
+  try {
+    const order = await Order.findByPk(orderId, { transaction: t });
+    if (!order) throw new Error("Order not found");
+
+    if (order.status !== OrderStatus.CONFIRMED) {
+      throw new Error(`Only confirmed orders can be shipped. Current: ${order.status}`);
+    }
+
+    order.status = OrderStatus.SHIPPED;
+    await order.save({ transaction: t });
+
+    await t.commit();
+    return order;
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+}
+
+export async function cancelOrder(orderId: number) {
+  const t = await sequelize.transaction();
+  try {
+    const order = await Order.findByPk(orderId, { transaction: t });
+    if (!order) throw new Error("Order not found");
+
+    if (order.status === OrderStatus.COMPLETED) {
+      throw new Error("Completed orders cannot be cancelled");
+    }
+    if (order.status === OrderStatus.CANCELLED) {
+      throw new Error("Order is already cancelled");
+    }
+
+    order.status = OrderStatus.CANCELLED;
+    if (order.paymentStatus === PaymentStatus.PAID) {
+      order.paymentStatus = PaymentStatus.REFUNDED;
+    }
+
+    await order.save({ transaction: t });
+
+    await t.commit();
+    return order;
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+}
+

@@ -8,5 +8,6 @@ const router = Router();
 router.get("/profile", authMiddleware, userController.getInforUser);
 router.put("/profile/updateInfor", authMiddleware, userController.updateInforUser);
 router.put("/profile/changePassword", authMiddleware, userController.changePasswordUser);
+router.put("/profile/confirmChangePassword", authMiddleware, userController.confirmChangePassword);
 export default router;
     

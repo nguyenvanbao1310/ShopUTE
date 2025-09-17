@@ -1,0 +1,11 @@
+import { Router  } from "express";
+import { authMiddleware  } from "../middleware/auth";
+import * as orderController from "../controllers/orderControllers"
+
+const router =  Router();
+
+router.post("/create", authMiddleware, orderController.createOrder);
+router.post("/confirm",authMiddleware, orderController.confirmOrder);
+router.post("/ship", authMiddleware, orderController.shipOrder);
+router.post("/cancel", authMiddleware, orderController.cancelOrder);
+export default router ;

@@ -6,7 +6,7 @@ export interface OrderAttributes {
   userId: number | null;          // nếu có bảng Users; tạm cho phép null
   code: string;                   // mã đơn (unique)
   totalAmount: string;            // DECIMAL -> string
-  status: "PENDING" | "PAID" | "CANCELLED" | "SHIPPED" | "COMPLETED";
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "SHIPPED" | "COMPLETED";
   paymentMethod?: string | null;  // COD, VNPAY, MOMO...
   paymentStatus?: "UNPAID" | "PAID" | "REFUNDED";
   note?: string | null;
@@ -29,7 +29,7 @@ class Order
   public userId!: number | null;
   public code!: string;
   public totalAmount!: string;
-  public status!: "PENDING" | "PAID" | "CANCELLED" | "SHIPPED" | "COMPLETED";
+  public status!: "PENDING" | "CONFIRMED" | "CANCELLED" | "SHIPPED" | "COMPLETED";
   public paymentMethod!: string | null;
   public paymentStatus!: "UNPAID" | "PAID" | "REFUNDED";
   public note!: string | null;
@@ -45,7 +45,7 @@ Order.init(
     code: { type: DataTypes.STRING(30), allowNull: false, unique: true },
     totalAmount: { type: DataTypes.DECIMAL(14, 2), allowNull: false },
     status: {
-      type: DataTypes.ENUM("PENDING", "PAID", "CANCELLED", "SHIPPED", "COMPLETED"),
+      type: DataTypes.ENUM("PENDING", "CONFIRMED", "CANCELLED", "SHIPPED", "COMPLETED"),
       allowNull: false,
       defaultValue: "PENDING",
     },
