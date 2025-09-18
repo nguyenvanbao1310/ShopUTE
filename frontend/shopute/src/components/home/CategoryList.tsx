@@ -2,10 +2,10 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 
 const categories = [
-  { id: 1, name: "Laptop", icon: "📱" },
-  { id: 2, name: "Tablets", icon: "💻" },
-  { id: 3, name: "Notebooks", icon: "🖥️" },
-  { id: 4, name: "Monitors", icon: "🖥️" },
+  { id: 1, name: "Laptop", icon: "💻" },
+  { id: 2, name: "Macbook", icon: "🍎" },
+  { id: 3, name: "Màn hình", icon: "🖥️" },
+  { id: 4, name: "Phụ kiện khác", icon: "⌨️" },
 ];
 
 const CategoryList: FC = () => {

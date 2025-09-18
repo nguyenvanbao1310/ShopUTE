@@ -3,11 +3,12 @@ import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
+import { Swiper as SwiperType } from 'swiper';
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Star, Heart, Share, ShoppingCart, Truck, CreditCard, Twitter, Facebook, Instagram } from "lucide-react";
+import { Star, Heart, Share, ShoppingCart, Truck, CreditCard, Twitter, Facebook, Instagram, AlertCircle } from "lucide-react";
 import FeaturedProducts from "./NewProducts";
 import Layout from "../../layouts/MainLayout";
 
@@ -51,14 +52,28 @@ const ProductDetail: FC = () => {
   const [selectedPayment, setSelectedPayment] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     axios
       .get(`http://localhost:8088/api/products/${id}`)
-      .then((res) => setProduct(res.data))
-      .catch((err) => console.error("Lỗi lấy sản phẩm:", err))
+      .then((res) => {
+        console.log("Product data from API:", res.data);
+        setProduct(res.data);
+        
+        // Kiểm tra xem có ảnh không
+        if (!res.data.Images || res.data.Images.length === 0) {
+          console.warn("No images found in API response");
+          setImageError(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy sản phẩm:", err);
+        setImageError(true);
+      })
       .finally(() => setLoading(false));
 
     axios
@@ -72,8 +87,15 @@ const ProductDetail: FC = () => {
     setIsFavorite(!isFavorite);
   };
 
-  if (loading) return <p className="text-center py-6">Đang tải...</p>;
-  if (!product) return <p className="text-center py-6">Không tìm thấy sản phẩm</p>;
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
+    console.error("Image failed to load:", target.src);
+    target.src = "https://via.placeholder.com/500x500?text=Image+Not+Found";
+    setImageError(true);
+  };
+
+  if (loading) return <div className="text-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div><p className="mt-4">Đang tải sản phẩm...</p></div>;
+  if (!product) return <p className="text-center py-12 text-red-500">Không tìm thấy sản phẩm</p>;
 
   const finalPrice = product.discountPercent
     ? product.price * (1 - product.discountPercent / 100)
@@ -99,6 +121,18 @@ const ProductDetail: FC = () => {
     { id: "bank", name: "Bank Transfer" }
   ];
 
+  // Tạo danh sách ảnh mẫu để test
+  const sampleImages = [
+    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    "https://images.unsplash.com/photo-1531297484001-80022131f5a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+  ];
+
+  // Sử dụng ảnh từ API nếu có, nếu không dùng ảnh mẫu
+  const displayImages = product.Images && product.Images.length > 0 
+    ? product.Images 
+    : sampleImages.map((url, index) => ({ url, position: index }));
+
   return (
     <Layout>
       <div className="bg-gray-50 min-h-screen">
@@ -122,51 +156,50 @@ const ProductDetail: FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
               {/* Swiper hình ảnh */}
               <div className="relative">
+                {imageError && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center">
+                    <AlertCircle size={20} className="text-yellow-600 mr-2" />
+                    <span className="text-yellow-700">Ảnh sản phẩm tạm thời không khả dụng</span>
+                  </div>
+                )}
+                
                 <Swiper
-                  modules={[Navigation, Pagination]}
+                  modules={[Navigation, Pagination, Autoplay]}
                   navigation
                   pagination={{ clickable: true }}
-                  className="w-full h-[500px] rounded-lg overflow-hidden"
+                  autoplay={{ delay: 3000 }}
+                  className="w-full h-[500px] rounded-lg overflow-hidden bg-gray-100"
+                  onSlideChange={(swiper: SwiperType) => setActiveImageIndex(swiper.activeIndex)}
                 >
-                  {product.Images.length > 0 ? (
-                    product.Images.map((image) => (
-                      <SwiperSlide key={image.position}>
+                  {displayImages.map((image, index) => (
+                    <SwiperSlide key={index}>
+                      <div className="w-full h-full flex items-center justify-center">
                         <img
                           src={image.url}
-                          alt={product.name}
-                          className="w-full h-full object-contain"
+                          alt={`${product.name} - ${index + 1}`}
+                          className="max-w-full max-h-full object-contain"
+                          onError={handleImageError}
                         />
-                      </SwiperSlide>
-                    ))
-                  ) : (
-                    <>
-                      <SwiperSlide>
-                        <img
-                          src="/img/lenovo-loq.jpg"
-                          alt="Lenovo"
-                          className="w-full h-full object-contain"
-                        />
-                      </SwiperSlide>
-                      <SwiperSlide>
-                        <img
-                          src="/img/asus-rog.jpg"
-                          alt="Asus"
-                          className="w-full h-full object-contain"
-                        />
-                      </SwiperSlide>
-                    </>
-                  )}
+                      </div>
+                    </SwiperSlide>
+                  ))}
                 </Swiper>
 
                 {/* Thumbnail nhỏ */}
                 <div className="flex justify-center space-x-2 mt-4">
-                  {product.Images.map((image) => (
-                    <img
-                      key={image.position}
-                      src={image.url}
-                      alt={product.name}
-                      className="w-16 h-16 object-cover cursor-pointer border rounded hover:border-blue-500"
-                    />
+                  {displayImages.map((image, index) => (
+                    <div 
+                      key={index}
+                      className={`w-16 h-16 cursor-pointer border-2 rounded-lg overflow-hidden ${activeImageIndex === index ? 'border-blue-500' : 'border-gray-300'}`}
+                      onClick={() => setActiveImageIndex(index)}
+                    >
+                      <img
+                        src={image.url}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={handleImageError}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
@@ -356,7 +389,7 @@ const ProductDetail: FC = () => {
           </div>
 
           {/* Reviews & Featured */}
-          <div className="py-6">
+          <div className="py-6 container mx-auto px-6">
             <div className="mb-6">
               {/* Tổng reviews */}
               <div className="flex justify-between items-center mb-6">

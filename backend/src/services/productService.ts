@@ -6,6 +6,7 @@ import {
   Op,
   literal,
   type Includeable,
+  WhereOptions,
 } from "sequelize";
 import sequelize from "../config/configdb";
 
@@ -24,7 +25,26 @@ const ProductDiscount = ProductDiscountModel as any;
 const ProductImage = ProductImageModel as any;
 const Rating = RatingModel as any;
 
-
+// Định nghĩa type cho Product (dựa trên ProductAttributes từ mô hình)
+interface ProductAttributes {
+  id: number;
+  name: string;
+  brand: string;
+  price: number;
+  status: "ACTIVE" | "INACTIVE";
+  stock: number;
+  viewCount: number;
+  thumbnailUrl: string | null;
+  categoryId: number;
+  createdAt: Date;
+  updatedAt: Date;
+  cpu?: string | null;
+  ram?: string | null;
+  storage?: string | null;
+  gpu?: string | null;
+  screen?: string | null;
+  description?: string | null;
+}
 // ===== Common attributes (alias rõ) =====
 const baseAttrs = [
   "id",
@@ -69,7 +89,7 @@ function buildIncludeCommon(): Includeable[] {
     {
       model: ProductDiscount,
       as: "discount",
-      attributes: [],
+      attributes: ["isActive", "startsAt", "endsAt", "discountPercent"], // Đảm bảo các cột cần thiết
       required: false,
     },
     {
@@ -272,10 +292,25 @@ export async function getProductDetailSvc(id: number) {
 }
 
 
-export async function getAllProductsSvc(page: number = 1, limit: number = 12) {
+export async function getAllProductsSvc(
+  page: number = 1,
+  limit: number = 12,
+  brands?: string[]
+) {
   const offset = (page - 1) * limit;
+
+  let productWhere: WhereOptions = { status: "ACTIVE" };
+  if (brands && brands.length > 0) {
+    productWhere = {
+      ...productWhere,
+      brand: {
+        [Op.in]: brands,
+      },
+    };
+  }
+
   const result = await Product.findAndCountAll({
-    where: { status: "ACTIVE" },
+    where: productWhere,
     attributes: baseAttrs,
     include: buildIncludeCommon(),
     order: [["createdAt", "DESC"]],
@@ -290,9 +325,15 @@ export async function getAllProductsSvc(page: number = 1, limit: number = 12) {
   const products = result.rows.map((row: any) => ({
     ...row.toJSON(),
     price: parseFloat(row.getDataValue("price")),
-    finalPrice: row.getDataValue("finalPrice") !== undefined ? parseFloat(row.getDataValue("finalPrice")) : parseFloat(row.getDataValue("price")),
-    discountPercent: row.getDataValue("discountPercent") !== undefined ? parseFloat(row.getDataValue("discountPercent")) : 0,
-    averageRating: 0, // Không tính averageRating ở đây, để null hoặc 0
+    finalPrice:
+      row.getDataValue("finalPrice") !== undefined
+        ? parseFloat(row.getDataValue("finalPrice"))
+        : parseFloat(row.getDataValue("price")),
+    discountPercent:
+      row.getDataValue("discountPercent") !== undefined
+        ? parseFloat(row.getDataValue("discountPercent"))
+        : 0,
+    averageRating: 0,
   }));
 
   return {
@@ -306,71 +347,79 @@ export async function getAllProductsSvc(page: number = 1, limit: number = 12) {
     },
   };
 }
-export async function getProductsByCategoryNameSvc(categoryName: string, page: number = 1, limit: number = 12) {
+export async function getProductsByCategoryNameSvc(
+  categoryName: string,
+  page: number = 1,
+  limit: number = 12,
+  brands?: string[]
+) {
+  console.log("CategoryName received:", categoryName); // Log để kiểm tra categoryName
+  console.log("Brands received:", brands); // Log để kiểm tra brands
+
   const offset = (page - 1) * limit;
-  let categoryWhere = {};
-  if (categoryName.toLowerCase() !== 'all') { // Nếu không phải 'all', thì filter theo categoryName
+  let categoryWhere: WhereOptions = {};
+  let productWhere: WhereOptions = { status: "ACTIVE" };
+
+  // Lọc theo danh mục, sử dụng LOWER để không phân biệt hoa/thường
+  if (categoryName.toLowerCase() !== "all") {
     categoryWhere = {
       name: {
-        [Op.like]: `%${categoryName}%`,
+        [Op.like]: `%${categoryName.toLowerCase()}%`, // Sử dụng Op.like
       },
     };
   }
+
+  // Lọc theo thương hiệu, giống getAllProductsSvc
+  if (brands && brands.length > 0) {
+    productWhere = {
+      ...productWhere,
+      brand: {
+        [Op.in]: brands.map(b => b.trim()), // Loại bỏ khoảng trắng
+      },
+    };
+  }
+
+  console.log("Category Where condition:", categoryWhere); // Log để kiểm tra categoryWhere
+  console.log("Product Where condition:", productWhere); // Log để kiểm tra productWhere
+
   const result = await Product.findAndCountAll({
-    where: {
-      status: "ACTIVE",
-    },
+    where: productWhere,
     include: [
       {
         model: Category,
         as: "Category",
         attributes: ["id", "name", "parentId"],
-        where: categoryName.toLowerCase() === 'all' ? {} : { // Không filter nếu là 'all'
-          name: {
-            [Op.like]: `%${categoryName}%`,
-          },
-        },
+        where: categoryWhere,
+        required: categoryName.toLowerCase() !== "all",
+      },
+      {
+        model: ProductDiscount,
+        as: "discount",
+        attributes: ["isActive", "startsAt", "endsAt", "discountPercent"],
+        required: false,
       },
       {
         model: ProductImage,
         as: "Images",
-        attributes: ["id", "url", "position"],
+        attributes: ["id", "url", "position", "createdAt", "updatedAt"],
         required: false,
+        separate: true,
+        order: [["position", "ASC"]],
       },
       {
         model: Rating,
         as: "Ratings",
-        attributes: [], // Chỉ dùng để tính trung bình, không lấy cột cụ thể
+        attributes: [],
         required: false,
       },
     ],
     attributes: {
       include: [
-        [
-          fn("COALESCE", fn("AVG", col("Ratings.rating")), 0), 
-          "averageRating"
-        ],
-        "id",
-        "name",
-        "description",
-        "price",
-        "viewCount",
-        "stock",
-        "status",
-        "thumbnailUrl",
-        "categoryId",
-        "brand",
-        "cpu",
-        "ram",
-        "storage",
-        "gpu",
-        "screen",
-        "createdAt",
-        "updatedAt",
+        [fn("COALESCE", fn("AVG", col("Ratings.rating")), 0), "averageRating"],
+        ...baseAttrs,
       ],
     },
-    // Loại bỏ Ratings.id khỏi group để tránh lỗi
-    group: ["Product.id", "Category.id", "Images.id"],
+    group: ['Product.id'], // Thêm GROUP BY để khắc phục lỗi aggregate
     order: [["createdAt", "DESC"]],
     limit,
     offset,
@@ -378,19 +427,24 @@ export async function getProductsByCategoryNameSvc(categoryName: string, page: n
     subQuery: false,
   });
 
-  // Xử lý kết quả để đảm bảo totalProducts chính xác
-  const totalProducts = result.rows.length > 0 ? result.count.length || result.count : 0; // Nếu không có sản phẩm, totalProducts = 0
+  const totalProducts = result.count.length || result.count;
   const totalPages = Math.ceil(totalProducts / limit);
-  const products = result.rows.map((row: any) => {
-    const data = row.toJSON();
-    return {
-      ...data,
-      price: parseFloat(data.price),
-      finalPrice: data.finalPrice !== undefined ? parseFloat(data.finalPrice) : parseFloat(data.price),
-      discountPercent: data.discountPercent !== undefined ? parseFloat(data.discountPercent) : 0,
-      averageRating: parseFloat(row.getDataValue("averageRating")) || 0,
-    };
-  });
+  const products = result.rows.map((row: any) => ({
+    ...row.toJSON(),
+    price: parseFloat(row.getDataValue("price")),
+    finalPrice:
+      row.getDataValue("finalPrice") !== undefined
+        ? parseFloat(row.getDataValue("finalPrice"))
+        : parseFloat(row.getDataValue("price")),
+    discountPercent:
+      row.getDataValue("discountPercent") !== undefined
+        ? parseFloat(row.getDataValue("discountPercent"))
+        : 0,
+    averageRating: parseFloat(row.getDataValue("averageRating")) || 0,
+  }));
+
+  console.log("Products returned:", products.length); // Log số lượng sản phẩm
+  console.log("Sample products:", products.slice(0, 2)); // Log mẫu sản phẩm
 
   return {
     products,
