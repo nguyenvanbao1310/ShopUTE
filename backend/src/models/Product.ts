@@ -73,6 +73,10 @@ Product.init(
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
       defaultValue: 0,
+      get() {
+    const value = this.getDataValue("price");
+    return value === null ? null : parseFloat(value);
+  },
     },
     viewCount: {
       type: DataTypes.INTEGER.UNSIGNED,

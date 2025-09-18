@@ -271,16 +271,51 @@ export async function getProductDetailSvc(id: number) {
   return found;
 }
 
-export async function getAllProductsSvc() {
-  return Product.findAll({
+
+export async function getAllProductsSvc(page: number = 1, limit: number = 12) {
+  const offset = (page - 1) * limit;
+  const result = await Product.findAndCountAll({
+    where: { status: "ACTIVE" },
     attributes: baseAttrs,
     include: buildIncludeCommon(),
     order: [["createdAt", "DESC"]],
+    limit,
+    offset,
+    distinct: true,
+    subQuery: false,
   });
+
+  const totalProducts = result.count.length || result.count;
+  const totalPages = Math.ceil(totalProducts / limit);
+  const products = result.rows.map((row: any) => ({
+    ...row.toJSON(),
+    price: parseFloat(row.getDataValue("price")),
+    finalPrice: row.getDataValue("finalPrice") !== undefined ? parseFloat(row.getDataValue("finalPrice")) : parseFloat(row.getDataValue("price")),
+    discountPercent: row.getDataValue("discountPercent") !== undefined ? parseFloat(row.getDataValue("discountPercent")) : 0,
+    averageRating: 0, // Không tính averageRating ở đây, để null hoặc 0
+  }));
+
+  return {
+    products,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalProducts,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+    },
+  };
 }
 export async function getProductsByCategoryNameSvc(categoryName: string, page: number = 1, limit: number = 12) {
   const offset = (page - 1) * limit;
-
+  let categoryWhere = {};
+  if (categoryName.toLowerCase() !== 'all') { // Nếu không phải 'all', thì filter theo categoryName
+    categoryWhere = {
+      name: {
+        [Op.like]: `%${categoryName}%`,
+      },
+    };
+  }
   const result = await Product.findAndCountAll({
     where: {
       status: "ACTIVE",
@@ -290,9 +325,9 @@ export async function getProductsByCategoryNameSvc(categoryName: string, page: n
         model: Category,
         as: "Category",
         attributes: ["id", "name", "parentId"],
-        where: {
+        where: categoryName.toLowerCase() === 'all' ? {} : { // Không filter nếu là 'all'
           name: {
-            [Op.like]: `%${categoryName}%`, // Sử dụng LIKE thay ILIKE
+            [Op.like]: `%${categoryName}%`,
           },
         },
       },
@@ -300,16 +335,21 @@ export async function getProductsByCategoryNameSvc(categoryName: string, page: n
         model: ProductImage,
         as: "Images",
         attributes: ["id", "url", "position"],
+        required: false,
       },
       {
         model: Rating,
         as: "Ratings",
-        attributes: [], // Chỉ dùng để tính trung bình
+        attributes: [], // Chỉ dùng để tính trung bình, không lấy cột cụ thể
+        required: false,
       },
     ],
     attributes: {
       include: [
-        [fn("COALESCE", fn("AVG", col("Ratings.rating")), 0), "averageRating"],
+        [
+          fn("COALESCE", fn("AVG", col("Ratings.rating")), 0), 
+          "averageRating"
+        ],
         "id",
         "name",
         "description",
@@ -329,7 +369,8 @@ export async function getProductsByCategoryNameSvc(categoryName: string, page: n
         "updatedAt",
       ],
     },
-    group: ["Product.id", "Category.id", "Images.id", "Ratings.id"],
+    // Loại bỏ Ratings.id khỏi group để tránh lỗi
+    group: ["Product.id", "Category.id", "Images.id"],
     order: [["createdAt", "DESC"]],
     limit,
     offset,
@@ -337,9 +378,19 @@ export async function getProductsByCategoryNameSvc(categoryName: string, page: n
     subQuery: false,
   });
 
-  const totalProducts = result.count;
+  // Xử lý kết quả để đảm bảo totalProducts chính xác
+  const totalProducts = result.rows.length > 0 ? result.count.length || result.count : 0; // Nếu không có sản phẩm, totalProducts = 0
   const totalPages = Math.ceil(totalProducts / limit);
-  const products = result.rows;
+  const products = result.rows.map((row: any) => {
+    const data = row.toJSON();
+    return {
+      ...data,
+      price: parseFloat(data.price),
+      finalPrice: data.finalPrice !== undefined ? parseFloat(data.finalPrice) : parseFloat(data.price),
+      discountPercent: data.discountPercent !== undefined ? parseFloat(data.discountPercent) : 0,
+      averageRating: parseFloat(row.getDataValue("averageRating")) || 0,
+    };
+  });
 
   return {
     products,
