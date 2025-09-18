@@ -1,14 +1,12 @@
-// src/components/home/ProductDetail.tsx
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Swiper as SwiperType } from 'swiper';
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Star, Heart, Share, ShoppingCart, Truck, CreditCard, Twitter, Facebook, Instagram, AlertCircle } from "lucide-react";
+import { Star, Heart, Share, ShoppingCart, Truck, CreditCard, Twitter, Facebook, Instagram } from "lucide-react";
 import FeaturedProducts from "./NewProducts";
 import Layout from "../../layouts/MainLayout";
 
@@ -28,6 +26,7 @@ interface Product {
   gpu: string;
   screen: string;
   discountPercent?: number;
+  finalPrice?: number;
 }
 
 interface Rating {
@@ -52,8 +51,6 @@ const ProductDetail: FC = () => {
   const [selectedPayment, setSelectedPayment] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [imageError, setImageError] = useState(false);
 
   const { id } = useParams<{ id: string }>();
 
@@ -61,25 +58,22 @@ const ProductDetail: FC = () => {
     axios
       .get(`http://localhost:8088/api/products/${id}`)
       .then((res) => {
-        console.log("Product data from API:", res.data);
+        console.log("Product data:", res.data);
         setProduct(res.data);
-        
-        // Kiểm tra xem có ảnh không
-        if (!res.data.Images || res.data.Images.length === 0) {
-          console.warn("No images found in API response");
-          setImageError(true);
-        }
       })
-      .catch((err) => {
-        console.error("Lỗi lấy sản phẩm:", err);
-        setImageError(true);
-      })
+      .catch((err) => console.error("Lỗi lấy sản phẩm:", err))
       .finally(() => setLoading(false));
 
     axios
       .get(`http://localhost:8088/api/products/${id}/ratings`)
-      .then((res) => setRatings(res.data))
-      .catch((err) => console.error("Lỗi lấy đánh giá:", err))
+      .then((res) => {
+        console.log("Ratings data:", res.data);
+        setRatings(res.data || []); // Đảm bảo ratings là mảng rỗng nếu không có dữ liệu
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy đánh giá:", err);
+        setRatings([]); // Đặt rỗng nếu 404
+      })
       .finally(() => setRatingsLoading(false));
   }, [id]);
 
@@ -87,23 +81,20 @@ const ProductDetail: FC = () => {
     setIsFavorite(!isFavorite);
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const target = e.target as HTMLImageElement;
-    console.error("Image failed to load:", target.src);
-    target.src = "https://via.placeholder.com/500x500?text=Image+Not+Found";
-    setImageError(true);
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = "https://placehold.co/500x500?text=Image+Not+Found"; // Thay fallback
   };
-
-  if (loading) return <div className="text-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div><p className="mt-4">Đang tải sản phẩm...</p></div>;
-  if (!product) return <p className="text-center py-12 text-red-500">Không tìm thấy sản phẩm</p>;
-
-  const finalPrice = product.discountPercent
-    ? product.price * (1 - product.discountPercent / 100)
-    : product.price;
 
   const handleQuantityChange = (change: number) => {
-    setQuantity((prev) => Math.max(1, Math.min(prev + change, product.stock)));
+    setQuantity((prev) => Math.max(1, Math.min(prev + change, product?.stock || 1)));
   };
+
+  if (loading) return <p className="text-center py-6">Đang tải...</p>;
+  if (!product) return <p className="text-center py-6">Không tìm thấy sản phẩm</p>;
+
+  const finalPrice = product.finalPrice || (product.discountPercent
+    ? product.price * (1 - product.discountPercent / 100)
+    : product.price);
 
   const averageRating = ratings.length > 0
     ? ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length
@@ -113,25 +104,13 @@ const ProductDetail: FC = () => {
   const shippingOptions = [
     { id: "standard", name: "Standard Shipping (3-5 days)", price: 5.99 },
     { id: "express", name: "Express Shipping (2-3 days)", price: 12.99 },
-    { id: "free", name: "Free Shipping (5-7 days)", price: 0 }
+    { id: "free", name: "Free Shipping (5-7 days)", price: 0 },
   ];
   const paymentOptions = [
     { id: "credit", name: "Credit Card" },
     { id: "paypal", name: "PayPal" },
-    { id: "bank", name: "Bank Transfer" }
+    { id: "bank", name: "Bank Transfer" },
   ];
-
-  // Tạo danh sách ảnh mẫu để test
-  const sampleImages = [
-    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    "https://images.unsplash.com/photo-1531297484001-80022131f5a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-  ];
-
-  // Sử dụng ảnh từ API nếu có, nếu không dùng ảnh mẫu
-  const displayImages = product.Images && product.Images.length > 0 
-    ? product.Images 
-    : sampleImages.map((url, index) => ({ url, position: index }));
 
   return (
     <Layout>
@@ -156,51 +135,59 @@ const ProductDetail: FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
               {/* Swiper hình ảnh */}
               <div className="relative">
-                {imageError && (
-                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center">
-                    <AlertCircle size={20} className="text-yellow-600 mr-2" />
-                    <span className="text-yellow-700">Ảnh sản phẩm tạm thời không khả dụng</span>
-                  </div>
-                )}
-                
                 <Swiper
-                  modules={[Navigation, Pagination, Autoplay]}
+                  modules={[Navigation, Pagination]}
                   navigation
                   pagination={{ clickable: true }}
-                  autoplay={{ delay: 3000 }}
-                  className="w-full h-[500px] rounded-lg overflow-hidden bg-gray-100"
-                  onSlideChange={(swiper: SwiperType) => setActiveImageIndex(swiper.activeIndex)}
+                  className="w-full h-[500px] rounded-lg overflow-hidden"
                 >
-                  {displayImages.map((image, index) => (
-                    <SwiperSlide key={index}>
-                      <div className="w-full h-full flex items-center justify-center">
+                  {product.Images.length > 0 ? (
+                    product.Images.map((image) => (
+                      <SwiperSlide key={image.position}>
                         <img
                           src={image.url}
-                          alt={`${product.name} - ${index + 1}`}
-                          className="max-w-full max-h-full object-contain"
-                          onError={handleImageError}
+                          alt={product.name}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = product.thumbnailUrl; // Sử dụng thumbnailUrl làm fallback nếu URL trong Images không tải được
+                          }}
                         />
-                      </div>
+                      </SwiperSlide>
+                    ))
+                  ) : (
+                    <SwiperSlide>
+                      <img
+                        src={product.thumbnailUrl}
+                        alt={product.name}
+                        className="w-full h-full object-contain"
+                        onError={handleImageError}
+                      />
                     </SwiperSlide>
-                  ))}
+                  )}
                 </Swiper>
 
                 {/* Thumbnail nhỏ */}
                 <div className="flex justify-center space-x-2 mt-4">
-                  {displayImages.map((image, index) => (
-                    <div 
-                      key={index}
-                      className={`w-16 h-16 cursor-pointer border-2 rounded-lg overflow-hidden ${activeImageIndex === index ? 'border-blue-500' : 'border-gray-300'}`}
-                      onClick={() => setActiveImageIndex(index)}
-                    >
+                  {product.Images.length > 0 ? (
+                    product.Images.map((image) => (
                       <img
+                        key={image.position}
                         src={image.url}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={handleImageError}
+                        alt={product.name}
+                        className="w-16 h-16 object-cover cursor-pointer border rounded hover:border-blue-500"
+                        onError={(e) => {
+                          e.currentTarget.src = product.thumbnailUrl; // Sử dụng thumbnailUrl làm fallback
+                        }}
                       />
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <img
+                      src={product.thumbnailUrl}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover cursor-pointer border rounded hover:border-blue-500"
+                      onError={handleImageError}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -220,17 +207,17 @@ const ProductDetail: FC = () => {
 
                 {/* Giá tiền */}
                 <div className="space-x-4">
-                  {product.discountPercent && (
+                  {product.discountPercent && product.discountPercent > 0 ? (
                     <span className="text-gray-400 line-through text-lg">
-                      ${product.price.toLocaleString()}
+                      {product.price.toLocaleString()} VNĐ
                     </span>
-                  )}
+                  ) : null}
                   <span className="text-blue-600 font-bold text-3xl">
-                    ${finalPrice.toLocaleString()}
+                    {finalPrice.toLocaleString()} VNĐ
                   </span>
-                  {product.discountPercent && (
+                  {product.discountPercent && product.discountPercent > 0 ? (
                     <span className="text-red-500 text-lg">(-{product.discountPercent}%)</span>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Mô tả */}
@@ -248,9 +235,9 @@ const ProductDetail: FC = () => {
                           key={color}
                           onClick={() => setSelectedColor(color)}
                           className={`w-10 h-10 rounded-full border-2 ${selectedColor === color ? 'border-blue-500' : 'border-gray-300'}`}
-                          style={{ 
-                            backgroundColor: color.toLowerCase() === 'black' ? '#000' : 
-                                            color.toLowerCase() === 'silver' ? '#c0c0c0' : 
+                          style={{
+                            backgroundColor: color.toLowerCase() === 'black' ? '#000' :
+                                            color.toLowerCase() === 'silver' ? '#c0c0c0' :
                                             color.toLowerCase() === 'gold' ? '#ffd700' : '#fff'
                           }}
                           title={color}
@@ -294,17 +281,17 @@ const ProductDetail: FC = () => {
                       <ShoppingCart size={20} className="mr-2" />
                       <span>Add to Cart</span>
                     </button>
-                    <button 
+                    <button
                       onClick={toggleFavorite}
                       className={`p-3 border border-gray-300 rounded-lg flex items-center justify-center ${
-                        isFavorite 
-                          ? "text-red-500 bg-red-50 border-red-200" 
+                        isFavorite
+                          ? "text-red-500 bg-red-50 border-red-200"
                           : "text-gray-600 hover:text-red-500"
                       }`}
                     >
-                      <Heart 
-                        size={20} 
-                        className={isFavorite ? "fill-current" : ""} 
+                      <Heart
+                        size={20}
+                        className={isFavorite ? "fill-current" : ""}
                       />
                     </button>
                   </div>
@@ -338,7 +325,7 @@ const ProductDetail: FC = () => {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select shipping method</option>
-                      {shippingOptions.map(option => (
+                      {shippingOptions.map((option) => (
                         <option key={option.id} value={option.id}>
                           {option.name} {option.price > 0 ? `- $${option.price.toFixed(2)}` : ''}
                         </option>
@@ -357,7 +344,7 @@ const ProductDetail: FC = () => {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select payment method</option>
-                      {paymentOptions.map(option => (
+                      {paymentOptions.map((option) => (
                         <option key={option.id} value={option.id}>{option.name}</option>
                       ))}
                     </select>
@@ -384,12 +371,12 @@ const ProductDetail: FC = () => {
                     </div>
                   </div>
                 </div>
-              </div> {/* End thông tin sản phẩm */}
+              </div>
             </div>
           </div>
 
           {/* Reviews & Featured */}
-          <div className="py-6 container mx-auto px-6">
+          <div className="py-6">
             <div className="mb-6">
               {/* Tổng reviews */}
               <div className="flex justify-between items-center mb-6">
