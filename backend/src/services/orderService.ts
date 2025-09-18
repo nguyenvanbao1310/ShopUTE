@@ -7,9 +7,16 @@ import User from "../models/User";
 import type { OrderCreationAttributes } from "../models/Order";
 import type { OrderDetailCreationAttributes } from "../models/OrderDetail";
 import { OrderStatus, PaymentStatus } from "../types/order";
+import CancelRequest from "../models/CancelRequest";
 
 export interface CreateOrderInput extends OrderCreationAttributes {
   details: Omit<OrderDetailCreationAttributes, "orderId">[];
+}
+
+export interface CancelResult {
+  type: "cancelled" | "request";
+  order?: Order;
+  message?: string;
 }
 
 export async function createOrder(data: CreateOrderInput) {
@@ -116,17 +123,16 @@ export async function shipOrder(orderId: number) {
   }
 }
 
-export async function cancelOrder(orderId: number) {
-  const t = await sequelize.transaction();
+export async function cancelPendingOrder(
+  orderId: number
+): Promise<CancelResult> {
+  const t: Transaction = await sequelize.transaction();
   try {
     const order = await Order.findByPk(orderId, { transaction: t });
     if (!order) throw new Error("Order not found");
 
-    if (order.status === OrderStatus.COMPLETED) {
-      throw new Error("Completed orders cannot be cancelled");
-    }
-    if (order.status === OrderStatus.CANCELLED) {
-      throw new Error("Order is already cancelled");
+    if (order.status !== OrderStatus.PENDING) {
+      throw new Error(`Cannot cancel order in status: ${order.status}`);
     }
 
     order.status = OrderStatus.CANCELLED;
@@ -135,15 +141,51 @@ export async function cancelOrder(orderId: number) {
     }
 
     await order.save({ transaction: t });
-
     await t.commit();
-    return order;
-  } catch (error) {
+
+    return { type: "cancelled", order };
+  } catch (err) {
     await t.rollback();
-    throw error;
+    throw err;
   }
 }
 
+export async function requestCancelOrder(
+  orderId: number,
+  userId?: number,
+  reason?: string
+): Promise<CancelResult> {
+  const t: Transaction = await sequelize.transaction();
+  try {
+    const order = await Order.findByPk(orderId, { transaction: t });
+    if (!order) throw new Error("Order not found");
+
+    if (order.status !== OrderStatus.CONFIRMED) {
+      throw new Error(
+        `Cannot request cancel for order in status: ${order.status}`
+      );
+    }
+
+    await CancelRequest.create(
+      {
+        orderId: order.id,
+        userId: userId ?? null,
+        reason: reason ?? "No reason provided",
+        status: "PENDING",
+      },
+      { transaction: t }
+    );
+
+    order.status = OrderStatus.CANCEL_REQUESTED;
+    await order.save({ transaction: t });
+
+    await t.commit();
+    return { type: "request", message: "Cancel request sent to shop" };
+  } catch (err) {
+    await t.rollback();
+    throw err;
+  }
+}
 export async function getUserOrders(userId: number) {
   const orders = await Order.findAll({
     where: { userId },

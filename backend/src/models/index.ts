@@ -7,6 +7,7 @@ import ProductDiscount from "./ProductDiscount";
 import Cart from "./Cart";
 import User from "./User";
 import CartItem from "./CartItem";
+import CancelRequest from "./CancelRequest";
 
 export function associateModels() {
   Category.belongsTo(Category, {
@@ -60,6 +61,20 @@ export function associateModels() {
     onUpdate: "CASCADE",
   });
   CartItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
+
+  Order.hasMany(CancelRequest, {
+    as: "CancelRequests",
+    foreignKey: "orderId",
+    onDelete: "CASCADE",
+  });
+  CancelRequest.belongsTo(Order, { as: "Order", foreignKey: "orderId" });
+
+  User.hasMany(CancelRequest, {
+    as: "CancelRequests",
+    foreignKey: "userId",
+    onDelete: "SET NULL",
+  });
+  CancelRequest.belongsTo(User, { as: "User", foreignKey: "userId" });
 }
 
 export {
@@ -72,4 +87,5 @@ export {
   User,
   Cart,
   CartItem,
+  CancelRequest,
 };

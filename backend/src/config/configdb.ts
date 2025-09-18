@@ -2,13 +2,16 @@ import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 dotenv.config();
 
-const DB_PASS= process.env.DB_PASS;
+const DB_PASS = process.env.DB_PASS;
 
 const sequelize = new Sequelize("shopute", "root", DB_PASS, {
-
   host: "localhost",
   dialect: "mysql",
+  timezone: "+07:00",
   logging: false,
+  dialectOptions: {
+    useUTC: false,
+  },
 });
 
 export const connectDB = async (): Promise<void> => {
