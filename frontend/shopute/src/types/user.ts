@@ -3,5 +3,7 @@ export interface Profile {
   lastName: string;
   phone: string;
   email: string;
-  avatar?: string;
+  avatar_url?: string | null; 
+  gender?: boolean | null;    
+  birthday?: string | null;   
 }

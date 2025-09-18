@@ -10,9 +10,12 @@ export const userApi = {
     const { data } = await api.put<Profile>('users/profile/updateInfor', profileData);
     return data;
   },
-
-  changePassword: async (passwordData: { oldPassword: string; newPassword: string }) => {
-    const { data } = await api.put('users/profile/changePassword', passwordData);
-    return data;
+   changePassword: async (data: { currentPassword: string; newPassword: string }) => {
+    const res = await api.put("/users/profile/changePassword", data);
+    return res.data;
+  },
+  confirmChangePassword: async (data: { otp: string; newPassword: string }) => {
+    const res = await api.put("/users/profile/confirmChangePassword", data);
+    return res.data;
   },
 };

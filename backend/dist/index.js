@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const path_1 = __importDefault(require("path"));
 const configdb_1 = require("./config/configdb"); // đường dẫn tới file db.ts
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -13,10 +14,12 @@ const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const authForgotRoutes_1 = __importDefault(require("./routes/authForgotRoutes"));
 const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const productImageRoutes_1 = __importDefault(require("./routes/productImageRoutes"));
+const cartRoutes_1 = __importDefault(require("./routes/cartRoutes"));
 const models_1 = require("./models");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8088;
+app.use("/images", express_1.default.static(path_1.default.join(process.cwd(), "public/images")));
 (0, models_1.associateModels)();
 app.use((0, cors_1.default)({
     origin: "http://localhost:3000", // frontend URL
@@ -31,6 +34,7 @@ app.use("/api/users", userRoutes_1.default); // thêm dòng này
 app.use("/api/products", productRoutes_1.default);
 app.use("/api/categories", categoryRoutes_1.default);
 app.use("/api/product-images", productImageRoutes_1.default);
+app.use("/api/cart", cartRoutes_1.default);
 // Kết nối DB
 (0, configdb_1.connectDB)();
 // Routes

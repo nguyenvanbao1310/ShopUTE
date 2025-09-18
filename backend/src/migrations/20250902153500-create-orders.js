@@ -3,7 +3,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("Orders", {
       id: { type: Sequelize.INTEGER, allowNull: false, autoIncrement: true, primaryKey: true },
-      userId: { type: Sequelize.INTEGER, allowNull: true },
+      userId: { type: Sequelize.INTEGER, allowNull: true , references: {model: "Users", key: "id",}, onUpdate: "CASCADE", onDelete: "SET NULL",},
       code: { type: Sequelize.STRING(30), allowNull: false, unique: true },
       totalAmount: { type: Sequelize.DECIMAL(14,2), allowNull: false },
       status: { type: Sequelize.ENUM("PENDING","PAID","CANCELLED","SHIPPED","COMPLETED"), allowNull: false, defaultValue: "PENDING" },

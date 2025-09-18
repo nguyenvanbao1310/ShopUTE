@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../store/authSlice";
 import { RootState, AppDispatch } from "../store/store";
 import { useNavigate } from "react-router-dom";
+import { unwrapResult } from "@reduxjs/toolkit";
 
 const Login: FC = () => {
   const navigate = useNavigate();
@@ -15,12 +16,19 @@ const Login: FC = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // ngăn reload trang
-    const result = await dispatch(loginUser({ email, password }));
-    if (loginUser.fulfilled.match(result)) {
+    e.preventDefault();
+
+    try {
+      // dispatch login và unwrapResult để lấy data thực sự
+      const resultAction = await dispatch(loginUser({ email, password }));
+      const result = unwrapResult(resultAction);
+
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user", JSON.stringify(result.user));
+
       navigate("/home");
-    } else {
-      alert((result.payload as any)?.message || "Login failed");
+    } catch (err: any) {
+      alert(err?.message || "Login failed");
     }
   };
 
@@ -73,7 +81,6 @@ const Login: FC = () => {
             >
               Forgot password?
             </button>
-
 
             <button
               type="submit"
