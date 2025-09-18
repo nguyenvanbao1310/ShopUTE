@@ -16,7 +16,8 @@ const UserMenu = ({ user, handleLogout }: any) => {
           alt="avatar"
           className="w-8 h-8 rounded-full border"
         />
-        <span className="text-gray-700">{user?.name || "User"}</span>
+        <span className="text-gray-700">{user?.name || user?.email}</span>
+
       </button>
 
       {/* Dropdown */}

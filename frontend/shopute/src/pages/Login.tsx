@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../store/authSlice";
+import { loginUser,fetchProfile } from "../store/authSlice";
 import { RootState, AppDispatch } from "../store/store";
 import { useNavigate } from "react-router-dom";
 
@@ -18,6 +18,7 @@ const Login: FC = () => {
     e.preventDefault(); // ngăn reload trang
     const result = await dispatch(loginUser({ email, password }));
     if (loginUser.fulfilled.match(result)) {
+      await dispatch(fetchProfile());
       navigate("/home");
     } else {
       alert((result.payload as any)?.message || "Login failed");

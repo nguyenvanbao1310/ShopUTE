@@ -48,7 +48,7 @@ const Header = () => {
           <div className="flex items-center gap-4 text-sm text-gray-600 ml-6">
             <button className="hover:text-green-600">Cart 🛒</button>
             {isAuthenticated ? (
-              <UserMenu user={user} handleLogout={handleLogout} />
+              <UserMenu  user={{ ...user, name: `${user?.firstName || ""} ${user?.lastName || ""}` }} handleLogout={handleLogout} />
             ) : (
               <>
                 <Link

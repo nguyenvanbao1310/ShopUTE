@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { Profile } from "../types/user";
 import axios from "axios";
-
+import {userApi} from "../apis/user";
 export interface User extends Profile {
   id: number;
   role: string;
@@ -157,8 +157,32 @@ export const resetPassword = createAsyncThunk<string, { resetToken: string; newP
     }
   }
 );
-
-
+export const fetchProfile = createAsyncThunk(
+  "auth/fetchProfile",
+  async (_, thunkAPI) => {
+    try {
+      const res = await userApi.getProfile();
+      return res;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Fetch profile failed"
+      );
+    }
+  }
+);
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (profileData: Partial<Profile>, thunkAPI) => {
+    try {
+      const res = await userApi.updateProfile(profileData);
+      return res;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Update profile failed"
+      );
+    }
+  }
+);
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -168,6 +192,7 @@ const authSlice = createSlice({
       state.token = null;
       state.error = null;
       state.isAuthenticated = false;
+      sessionStorage.removeItem("token");
     },
   },
   extraReducers: (builder) => {
@@ -181,6 +206,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
+        sessionStorage.setItem("token", action.payload.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -255,6 +281,22 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+        .addCase(fetchProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(fetchProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.user = { ...state.user, ...action.payload };
       });
   },
 });
