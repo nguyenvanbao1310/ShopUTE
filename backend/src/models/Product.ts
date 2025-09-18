@@ -1,5 +1,6 @@
 import { Model, DataTypes, Optional } from "sequelize";
 import sequelize from "../config/configdb";
+import Rating from "./rating";
 
 export interface ProductAttributes {
   id: number;
@@ -72,6 +73,10 @@ Product.init(
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
       defaultValue: 0,
+      get() {
+    const value = this.getDataValue("price");
+    return value === null ? null : parseFloat(value);
+  },
     },
     viewCount: {
       type: DataTypes.INTEGER.UNSIGNED,
@@ -100,5 +105,6 @@ Product.init(
     timestamps: true,
   }
 );
-
+Product.hasMany(Rating, { foreignKey: "productId", as: "Ratings" });
+Rating.belongsTo(Product, { foreignKey: "productId" });
 export default Product;

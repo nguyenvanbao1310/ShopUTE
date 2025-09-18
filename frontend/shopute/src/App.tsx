@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import VerifyOTP from "./pages/VerifyOtp";
+import CategoryList from "./components/home/CategoryList";
 import CategoryPage from "./components/home/CategoryPage";
 import ProductDetail from "./components/home/ProductDetail";
 import AccountLayout from "./pages/account/AccountLayout";
@@ -29,7 +30,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/categories/:categoryId" element={<CategoryPage />} />
+        <Route path="/" element={<CategoryList />} />
+        <Route path="category/:categoryName" element={<CategoryPage />} />
         <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
     </BrowserRouter>

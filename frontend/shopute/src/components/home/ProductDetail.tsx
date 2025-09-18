@@ -1,4 +1,3 @@
-// src/components/home/ProductDetail.tsx
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
@@ -27,6 +26,7 @@ interface Product {
   gpu: string;
   screen: string;
   discountPercent?: number;
+  finalPrice?: number;
 }
 
 interface Rating {
@@ -57,14 +57,23 @@ const ProductDetail: FC = () => {
   useEffect(() => {
     axios
       .get(`http://localhost:8088/api/products/${id}`)
-      .then((res) => setProduct(res.data))
+      .then((res) => {
+        console.log("Product data:", res.data);
+        setProduct(res.data);
+      })
       .catch((err) => console.error("Lỗi lấy sản phẩm:", err))
       .finally(() => setLoading(false));
 
     axios
       .get(`http://localhost:8088/api/products/${id}/ratings`)
-      .then((res) => setRatings(res.data))
-      .catch((err) => console.error("Lỗi lấy đánh giá:", err))
+      .then((res) => {
+        console.log("Ratings data:", res.data);
+        setRatings(res.data || []); // Đảm bảo ratings là mảng rỗng nếu không có dữ liệu
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy đánh giá:", err);
+        setRatings([]); // Đặt rỗng nếu 404
+      })
       .finally(() => setRatingsLoading(false));
   }, [id]);
 
@@ -72,16 +81,20 @@ const ProductDetail: FC = () => {
     setIsFavorite(!isFavorite);
   };
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src = "https://placehold.co/500x500?text=Image+Not+Found"; // Thay fallback
+  };
+
+  const handleQuantityChange = (change: number) => {
+    setQuantity((prev) => Math.max(1, Math.min(prev + change, product?.stock || 1)));
+  };
+
   if (loading) return <p className="text-center py-6">Đang tải...</p>;
   if (!product) return <p className="text-center py-6">Không tìm thấy sản phẩm</p>;
 
-  const finalPrice = product.discountPercent
+  const finalPrice = product.finalPrice || (product.discountPercent
     ? product.price * (1 - product.discountPercent / 100)
-    : product.price;
-
-  const handleQuantityChange = (change: number) => {
-    setQuantity((prev) => Math.max(1, Math.min(prev + change, product.stock)));
-  };
+    : product.price);
 
   const averageRating = ratings.length > 0
     ? ratings.reduce((sum, rating) => sum + rating.rating, 0) / ratings.length
@@ -91,12 +104,12 @@ const ProductDetail: FC = () => {
   const shippingOptions = [
     { id: "standard", name: "Standard Shipping (3-5 days)", price: 5.99 },
     { id: "express", name: "Express Shipping (2-3 days)", price: 12.99 },
-    { id: "free", name: "Free Shipping (5-7 days)", price: 0 }
+    { id: "free", name: "Free Shipping (5-7 days)", price: 0 },
   ];
   const paymentOptions = [
     { id: "credit", name: "Credit Card" },
     { id: "paypal", name: "PayPal" },
-    { id: "bank", name: "Bank Transfer" }
+    { id: "bank", name: "Bank Transfer" },
   ];
 
   return (
@@ -135,39 +148,46 @@ const ProductDetail: FC = () => {
                           src={image.url}
                           alt={product.name}
                           className="w-full h-full object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = product.thumbnailUrl; // Sử dụng thumbnailUrl làm fallback nếu URL trong Images không tải được
+                          }}
                         />
                       </SwiperSlide>
                     ))
                   ) : (
-                    <>
-                      <SwiperSlide>
-                        <img
-                          src="/img/lenovo-loq.jpg"
-                          alt="Lenovo"
-                          className="w-full h-full object-contain"
-                        />
-                      </SwiperSlide>
-                      <SwiperSlide>
-                        <img
-                          src="/img/asus-rog.jpg"
-                          alt="Asus"
-                          className="w-full h-full object-contain"
-                        />
-                      </SwiperSlide>
-                    </>
+                    <SwiperSlide>
+                      <img
+                        src={product.thumbnailUrl}
+                        alt={product.name}
+                        className="w-full h-full object-contain"
+                        onError={handleImageError}
+                      />
+                    </SwiperSlide>
                   )}
                 </Swiper>
 
                 {/* Thumbnail nhỏ */}
                 <div className="flex justify-center space-x-2 mt-4">
-                  {product.Images.map((image) => (
+                  {product.Images.length > 0 ? (
+                    product.Images.map((image) => (
+                      <img
+                        key={image.position}
+                        src={image.url}
+                        alt={product.name}
+                        className="w-16 h-16 object-cover cursor-pointer border rounded hover:border-blue-500"
+                        onError={(e) => {
+                          e.currentTarget.src = product.thumbnailUrl; // Sử dụng thumbnailUrl làm fallback
+                        }}
+                      />
+                    ))
+                  ) : (
                     <img
-                      key={image.position}
-                      src={image.url}
+                      src={product.thumbnailUrl}
                       alt={product.name}
                       className="w-16 h-16 object-cover cursor-pointer border rounded hover:border-blue-500"
+                      onError={handleImageError}
                     />
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -187,17 +207,17 @@ const ProductDetail: FC = () => {
 
                 {/* Giá tiền */}
                 <div className="space-x-4">
-                  {product.discountPercent && (
+                  {product.discountPercent && product.discountPercent > 0 ? (
                     <span className="text-gray-400 line-through text-lg">
-                      ${product.price.toLocaleString()}
+                      {product.price.toLocaleString()} VNĐ
                     </span>
-                  )}
+                  ) : null}
                   <span className="text-blue-600 font-bold text-3xl">
-                    ${finalPrice.toLocaleString()}
+                    {finalPrice.toLocaleString()} VNĐ
                   </span>
-                  {product.discountPercent && (
+                  {product.discountPercent && product.discountPercent > 0 ? (
                     <span className="text-red-500 text-lg">(-{product.discountPercent}%)</span>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Mô tả */}
@@ -215,9 +235,9 @@ const ProductDetail: FC = () => {
                           key={color}
                           onClick={() => setSelectedColor(color)}
                           className={`w-10 h-10 rounded-full border-2 ${selectedColor === color ? 'border-blue-500' : 'border-gray-300'}`}
-                          style={{ 
-                            backgroundColor: color.toLowerCase() === 'black' ? '#000' : 
-                                            color.toLowerCase() === 'silver' ? '#c0c0c0' : 
+                          style={{
+                            backgroundColor: color.toLowerCase() === 'black' ? '#000' :
+                                            color.toLowerCase() === 'silver' ? '#c0c0c0' :
                                             color.toLowerCase() === 'gold' ? '#ffd700' : '#fff'
                           }}
                           title={color}
@@ -261,17 +281,17 @@ const ProductDetail: FC = () => {
                       <ShoppingCart size={20} className="mr-2" />
                       <span>Add to Cart</span>
                     </button>
-                    <button 
+                    <button
                       onClick={toggleFavorite}
                       className={`p-3 border border-gray-300 rounded-lg flex items-center justify-center ${
-                        isFavorite 
-                          ? "text-red-500 bg-red-50 border-red-200" 
+                        isFavorite
+                          ? "text-red-500 bg-red-50 border-red-200"
                           : "text-gray-600 hover:text-red-500"
                       }`}
                     >
-                      <Heart 
-                        size={20} 
-                        className={isFavorite ? "fill-current" : ""} 
+                      <Heart
+                        size={20}
+                        className={isFavorite ? "fill-current" : ""}
                       />
                     </button>
                   </div>
@@ -305,7 +325,7 @@ const ProductDetail: FC = () => {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select shipping method</option>
-                      {shippingOptions.map(option => (
+                      {shippingOptions.map((option) => (
                         <option key={option.id} value={option.id}>
                           {option.name} {option.price > 0 ? `- $${option.price.toFixed(2)}` : ''}
                         </option>
@@ -324,7 +344,7 @@ const ProductDetail: FC = () => {
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select payment method</option>
-                      {paymentOptions.map(option => (
+                      {paymentOptions.map((option) => (
                         <option key={option.id} value={option.id}>{option.name}</option>
                       ))}
                     </select>
@@ -351,7 +371,7 @@ const ProductDetail: FC = () => {
                     </div>
                   </div>
                 </div>
-              </div> {/* End thông tin sản phẩm */}
+              </div>
             </div>
           </div>
 
