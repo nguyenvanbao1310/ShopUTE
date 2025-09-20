@@ -10,6 +10,9 @@ import "swiper/css/pagination";
 import { Star, Heart, Share, ShoppingCart, Truck, CreditCard, Twitter, Facebook, Instagram } from "lucide-react";
 import FeaturedProducts from "./NewProducts";
 import Layout from "../../layouts/MainLayout";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store/store";
+import { addToCart } from "../../store/cartSlice";
 
 interface Product {
   id: number;
@@ -53,6 +56,7 @@ const ProductDetail: FC = () => {
   const [sortOrder, setSortOrder] = useState("newest");
 
   const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     axios
@@ -257,7 +261,10 @@ const ProductDetail: FC = () => {
                   </div>
 
                   <div className="flex space-x-4 pt-4">
-                    <button className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center">
+                    <button
+                      className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center"
+                      onClick={() => product && dispatch(addToCart({ productId: product.id, quantity }))}
+                    >
                       <ShoppingCart size={20} className="mr-2" />
                       <span>Add to Cart</span>
                     </button>

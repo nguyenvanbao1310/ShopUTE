@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import VerifyOTP from "./pages/VerifyOtp";
 import CategoryPage from "./components/home/CategoryPage";
 import ProductDetail from "./components/home/ProductDetail";
+import CartPage from "./pages/Cart";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/categories/:categoryId" element={<CategoryPage />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<CartPage />} />
       </Routes>
     </BrowserRouter>
   );

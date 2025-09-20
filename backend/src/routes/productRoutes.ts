@@ -22,12 +22,9 @@ router.get("/most-viewed", mostViewed); // 08 sản phẩm xem nhiều
 router.get("/top-discount", topDiscount); // 04 sản phẩm giảm sâu
 router.get("/all", getAllProducts);
 router.get('/category/:categoryName', getProductsByCategory);
-
-// Create / Update
-router.post("/", authMiddleware, createProduct);
-router.put("/:id", authMiddleware, updateProduct);
-
 // Detail (auto +1 view)
 router.get("/:id", getProductDetail);
-
+// Create / Update
+router.put("/:id", authMiddleware, updateProduct);
+router.post("/", authMiddleware, createProduct);
 export default router;
