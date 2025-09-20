@@ -1,6 +1,31 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from "../config/configdb";
-class Rating extends Model {}
+
+export interface RatingAttributes {
+  id?: number;
+  productId: number;
+  userId: number;
+  rating: number;
+  comment?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+type RatingCreationAttributes = Optional<
+  RatingAttributes,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+class Rating 
+extends Model<RatingAttributes, RatingCreationAttributes> 
+implements RatingAttributes {
+  id?: number;
+  productId!: number;
+  userId!: number;
+  rating!: number;
+  comment?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 Rating.init({
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -14,6 +39,7 @@ Rating.init({
   sequelize,
   modelName: 'Rating',
   tableName: 'ratings',
+  timestamps: true
 });
 
 export default Rating;
