@@ -4,8 +4,8 @@ import { createProductImage, updateProductImage, getAllProductImages } from "../
 
 const router = Router();
 
+router.get("/all", getAllProductImages);
 router.post("/", authMiddleware, createProductImage);
 router.put("/:id", authMiddleware, updateProductImage);
-router.get("/all", authMiddleware, getAllProductImages);
 
 export default router;
