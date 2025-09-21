@@ -9,7 +9,7 @@ function ctx(req: Request) {
 
 export const getCart = async (req: Request, res: Response) => {
   try {
-    const data = await CartService.getCartDetail(ctx(req));
+    const data = await CartService.getCartDetailWithDiscount(ctx(req));
     return res.json({ success: true, data });
   } catch (e: any) {
     return res.status(400).json({ success: false, message: e.message || "GET_CART_FAILED" });
@@ -76,7 +76,7 @@ export const mergeGuestCart = async (req: Request, res: Response) => {
     if (!deviceId) return res.status(400).json({ success: false, message: "deviceId required" });
 
     await CartService.mergeGuestCartToUser(userId, deviceId);
-    const data = await CartService.getCartDetail({ userId, deviceId: null });
+    const data = await CartService.getCartDetailWithDiscount({ userId, deviceId: null });
     return res.json({ success: true, data });
   } catch (e: any) {
     return res.status(400).json({ success: false, message: e.message || "MERGE_FAILED" });

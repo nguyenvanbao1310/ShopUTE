@@ -1,1 +1,1 @@
-{"version":3,"file":"configdb.d.ts","sourceRoot":"","sources":["../../src/config/configdb.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,WAAW,CAAC;AAMtC,QAAA,MAAM,SAAS,WAKb,CAAC;AAEH,eAAO,MAAM,SAAS,QAAa,OAAO,CAAC,IAAI,CAO9C,CAAC;AAGF,eAAe,SAAS,CAAC"}
+{"version":3,"file":"configdb.d.ts","sourceRoot":"","sources":["../../src/config/configdb.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,WAAW,CAAC;AAMtC,QAAA,MAAM,SAAS,WAQb,CAAC;AAEH,eAAO,MAAM,SAAS,QAAa,OAAO,CAAC,IAAI,CAO9C,CAAC;AAGF,eAAe,SAAS,CAAC"}
