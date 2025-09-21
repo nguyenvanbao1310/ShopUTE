@@ -1,6 +1,5 @@
 import { Model, DataTypes, Optional } from "sequelize";
 import sequelize from "../config/configdb";
-import Rating from "./rating";
 
 export interface ProductAttributes {
   id: number;
@@ -105,6 +104,4 @@ Product.init(
     timestamps: true,
   }
 );
-Product.hasMany(Rating, { foreignKey: "productId", as: "Ratings" });
-Rating.belongsTo(Product, { foreignKey: "productId" });
 export default Product;

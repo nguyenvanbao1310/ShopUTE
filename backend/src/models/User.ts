@@ -15,6 +15,7 @@ export interface UserAttributes {
   otp?: string | null;
   otpExpire?: Date | null;
   role: "user" | "admin";
+  loyaltyPoints?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -40,6 +41,7 @@ export class User
   public otp!: string | null;
   public otpExpire!: Date | null;
   public role!: "user" | "admin";
+  public loyaltyPoints!: number;
 
   // timestamps!
   public readonly createdAt!: Date;
@@ -99,6 +101,11 @@ User.init(
       type: DataTypes.ENUM("user", "admin"),
       allowNull: false,
       defaultValue: "user",
+    },
+    loyaltyPoints: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: false,
+      defaultValue: 0,
     },
   },
   {

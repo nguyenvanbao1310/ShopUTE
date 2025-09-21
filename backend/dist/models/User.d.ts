@@ -6,13 +6,17 @@ export interface UserAttributes {
     firstName: string;
     lastName: string;
     phone: string;
+    gender?: boolean | null;
+    birthday?: Date | null;
+    avatar_url?: string | null;
     otp?: string | null;
     otpExpire?: Date | null;
     role: "user" | "admin";
+    loyaltyPoints?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
-export interface UserCreationAttributes extends Optional<UserAttributes, "id" | "createdAt" | "updatedAt"> {
+export interface UserCreationAttributes extends Optional<UserAttributes, "id" | "createdAt" | "updatedAt" | "gender" | "birthday" | "avatar_url"> {
 }
 export declare class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     id: number;
@@ -21,9 +25,13 @@ export declare class User extends Model<UserAttributes, UserCreationAttributes> 
     firstName: string;
     lastName: string;
     phone: string;
+    gender: boolean | null;
+    birthday: Date | null;
+    avatar_url: string | null;
     otp: string | null;
     otpExpire: Date | null;
     role: "user" | "admin";
+    loyaltyPoints: number;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }

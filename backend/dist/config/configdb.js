@@ -11,7 +11,11 @@ const DB_PASS = process.env.DB_PASS;
 const sequelize = new sequelize_1.Sequelize("shopute", "root", DB_PASS, {
     host: "localhost",
     dialect: "mysql",
+    timezone: "+07:00",
     logging: false,
+    dialectOptions: {
+        useUTC: false,
+    },
 });
 const connectDB = async () => {
     try {
