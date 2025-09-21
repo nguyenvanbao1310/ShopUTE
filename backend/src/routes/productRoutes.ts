@@ -10,6 +10,7 @@ import {
   createProduct,
   updateProduct,
   getProductsByCategory,
+  getSimilarProducts,
 } from "../controllers/productControllers";
 import { authMiddleware } from "../middleware/auth";
 
@@ -27,4 +28,5 @@ router.get("/:id", getProductDetail);
 // Create / Update
 router.put("/:id", authMiddleware, updateProduct);
 router.post("/", authMiddleware, createProduct);
+router.get("/:id/similar", getSimilarProducts);
 export default router;

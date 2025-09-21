@@ -7,7 +7,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Star, Heart, Share, ShoppingCart, Truck, CreditCard, Twitter, Facebook, Instagram } from "lucide-react";
-import FeaturedProducts from "./NewProducts";
+import SimilarProducts from "./SimilarProducts";
 import Layout from "../../layouts/MainLayout";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store";
@@ -30,6 +30,8 @@ interface Product {
   screen: string;
   discountPercent?: number;
   finalPrice?: number;
+    buyerCount?: number;
+  commentCount?: number;
 }
 
 interface Rating {
@@ -279,6 +281,17 @@ const ProductDetail: FC = () => {
                       <span className="text-gray-500 text-sm">({product.stock} available)</span>
                     </div>
                   </div>
+                  <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+  <h3 className="font-semibold mb-4 text-lg">Statistics</h3>
+  <div className="space-y-3 text-gray-700">
+    <div>
+      <span className="font-medium">Customers bought:</span> {product.buyerCount || 0}
+    </div>
+    <div>
+      <span className="font-medium">Comments:</span> {product.commentCount || 0}
+    </div>
+  </div>
+</div>
 
                   <div className="flex space-x-4 pt-4">
                     <button
@@ -478,8 +491,8 @@ const ProductDetail: FC = () => {
               </div>
             </div>
 
-            {/* Featured Products */}
-            <FeaturedProducts />
+            {/* Similar Products */}
+            <SimilarProducts productId={product.id} categoryId={product.categoryId} />
           </div>
         </div>
       </div>
