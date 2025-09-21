@@ -279,8 +279,25 @@ export async function getProductDetailSvc(id: number) {
       "storage",
       "gpu",
       "screen",
+       [fn("COUNT", fn("DISTINCT", col("OrderDetails.id"))), "buyerCount"],
+    [fn("COUNT", fn("DISTINCT", col("Ratings.id"))), "commentCount"],
     ],
-    include: buildIncludeCommon(),
+    include: [
+      ...buildIncludeCommon(),
+      {
+        model: OrderDetail,
+        as: "OrderDetails",
+        attributes: [],
+        required: false,
+      },
+      {
+        model: Rating,
+        as: "Ratings",
+        attributes: [],
+        required: false,
+      },
+    ],
+    group: ["Product.id"],
   });
 
   if (!found) {
@@ -291,7 +308,20 @@ export async function getProductDetailSvc(id: number) {
   return found;
 }
 
-
+export async function getSimilarProductsSvc(productId: number, categoryId: number, limit = 4) {
+  return Product.findAll({
+    where: {
+      status: "ACTIVE",
+      categoryId, // cùng danh mục
+      id: { [Op.ne]: productId }, // loại bỏ sản phẩm hiện tại
+    },
+    attributes: baseAttrs,
+    include: buildIncludeCommon(),
+    order: [["createdAt", "DESC"]],
+    limit,
+    subQuery: false,
+  });
+}
 export async function getAllProductsSvc(
   page: number = 1,
   limit: number = 12,
@@ -457,3 +487,4 @@ export async function getProductsByCategoryNameSvc(
     },
   };
 }
+

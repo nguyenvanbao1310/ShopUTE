@@ -9,6 +9,7 @@ import {
   createProductSvc,
   updateProductSvc,
   getProductsByCategoryNameSvc,
+  getSimilarProductsSvc ,
 } from "../services/productService";
 import { AuthRequest } from "../middleware/auth";
 
@@ -138,3 +139,19 @@ export const getProductsByCategory = async (req: Request, res: Response) => {
     });
   }
 };
+export async function getSimilarProducts(req: Request, res: Response) {
+  try {
+    const productId = Number(req.params.id);
+    const categoryId = Number(req.query.categoryId); // truyền categoryId từ FE
+    if (Number.isNaN(productId) || Number.isNaN(categoryId)) {
+      return res.status(400).json({ message: "Invalid productId or categoryId" });
+    }
+
+    const products = await getSimilarProductsSvc(productId, categoryId);
+    res.json(products);
+  } catch (e: any) {
+    res.status(e?.status || 500).json({
+      message: e?.message || "Internal Server Error",
+    });
+  }
+}
