@@ -43,6 +43,15 @@ const UserMenu = ({ user, handleLogout }: any) => {
             </li>
             <li>
               <Link
+                to="/wishlist"
+                className="block px-4 py-2 hover:bg-gray-100 "
+                onClick={() => setOpen(false)}
+              >
+                Yêu thích
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/change-password"
                 className="block px-4 py-2 hover:bg-gray-100"
                 onClick={() => setOpen(false)}

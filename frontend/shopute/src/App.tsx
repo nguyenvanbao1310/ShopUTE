@@ -16,6 +16,7 @@ import Profile from "./pages/account/Profile";
 import Address from "./pages/account/Address";
 import ChangePassword from "./pages/account/ChangePassword";
 import OrderList from "./components/OrderList";
+import WishlistPage from "./pages/wishlist/WishlistPage";
 function App() {
   return (
     <BrowserRouter>
@@ -29,6 +30,7 @@ function App() {
           <Route path="change-password" element={<ChangePassword />} />
         </Route>
         <Route path="orders" element={<OrderList />} />
+        <Route path="wishlist" element={<WishlistPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/home" element={<Home />} />
