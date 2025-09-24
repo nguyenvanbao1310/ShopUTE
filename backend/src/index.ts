@@ -12,6 +12,7 @@ import productImageRoutes from "./routes/productImageRoutes";
 import cartRoutes from "./routes/cartRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import addressRoutes from "./routes/addressRoutes";
+import wishlistRoutes from "./routes/wishlistRoutes";
 import { associateModels } from "./models";
 import { startCronJobs } from "./cronJobs";
 dotenv.config();
@@ -43,6 +44,7 @@ app.use("/api/product-images", productImageRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/address", addressRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 // Kết nối DB
 connectDB();
 

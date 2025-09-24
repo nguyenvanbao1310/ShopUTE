@@ -10,6 +10,7 @@ import CartItem from "./CartItem";
 import CancelRequest from "./CancelRequest";
 import Rating from "./rating";
 import Coupon from "./Coupon";
+import Wishlist from "./Wishlist";
 
 export function associateModels() {
   Category.belongsTo(Category, {
@@ -87,6 +88,13 @@ export function associateModels() {
   // Coupon associations
   User.hasMany(Coupon, { as: "Coupons", foreignKey: "userId" });
   Coupon.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  // Wishlist associations
+  User.hasMany(Wishlist, { as: "Wishlists", foreignKey: "userId" });
+  Wishlist.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  Product.hasMany(Wishlist, { as: "Wishlists", foreignKey: "productId" });
+  Wishlist.belongsTo(Product, { as: "Product", foreignKey: "productId" });
 }
 
 export {
@@ -102,4 +110,5 @@ export {
   CancelRequest,
   Rating,
   Coupon,
+  Wishlist,
 };
