@@ -11,6 +11,7 @@ import CancelRequest from "./CancelRequest";
 import Rating from "./rating";
 import Coupon from "./Coupon";
 import Wishlist from "./Wishlist";
+import ViewedProduct from "./ViewedProduct";
 
 export function associateModels() {
   Category.belongsTo(Category, {
@@ -39,6 +40,17 @@ export function associateModels() {
     as: "product",
     foreignKey: "productId",
   });
+
+  // User ↔ ViewedProduct
+  User.hasMany(ViewedProduct, { as: "ViewedProducts", foreignKey: "userId" });
+  ViewedProduct.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  // Product ↔ ViewedProduct
+  Product.hasMany(ViewedProduct, {
+    as: "ViewedProducts",
+    foreignKey: "productId",
+  });
+  ViewedProduct.belongsTo(Product, { as: "Product", foreignKey: "productId" });
 
   // ===== Associations cho Cart =====
   User.hasOne(Cart, {
@@ -111,4 +123,5 @@ export {
   Rating,
   Coupon,
   Wishlist,
+  ViewedProduct,
 };
