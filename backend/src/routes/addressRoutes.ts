@@ -1,13 +1,20 @@
-import { Router  } from "express";
-import { authMiddleware  } from "../middleware/auth";
-import * as addressController from "../controllers/addressControllers"
+import { Router } from "express";
+import { authMiddleware } from "../middleware/auth";
+import {
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  getDefaultAddress,
+  getAllAddress,
+  getAddressById,
+} from "../controllers/addressControllers";
 
 const router = Router();
 
-router.post("/create", authMiddleware, addressController.createAddress);
-router.put("/:id", authMiddleware, addressController.updateAddress);
-router.delete("/:id", authMiddleware, addressController.deleteAddress);
-router.get("/default", authMiddleware, addressController.getDefaultAddress);
-router.get("/", authMiddleware, addressController.getAllAddress);
-router.get("/:id", authMiddleware, addressController.getAddressById);
+router.post("/create", authMiddleware, createAddress);
+router.put("/:id", authMiddleware, updateAddress);
+router.delete("/:id", authMiddleware, deleteAddress);
+router.get("/default", authMiddleware, getDefaultAddress);
+router.get("/", authMiddleware, getAllAddress);
+router.get("/:id", authMiddleware, getAddressById);
 export default router;

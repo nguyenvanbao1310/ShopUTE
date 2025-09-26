@@ -10,9 +10,12 @@ import authForgotRoutes from "./routes/authForgotRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import productImageRoutes from "./routes/productImageRoutes";
 import cartRoutes from "./routes/cartRoutes";
-import orderRoutes from "./routes/orderRoutes"
-import addressRoutes from "./routes/addressRoutes"
+import orderRoutes from "./routes/orderRoutes";
+import addressRoutes from "./routes/addressRoutes";
+import wishlistRoutes from "./routes/wishlistRoutes";
+import viewedRoutes from "./routes/viewedRoutes";
 import { associateModels } from "./models";
+import { startCronJobs } from "./cronJobs";
 dotenv.config();
 
 const app = express();
@@ -40,8 +43,11 @@ app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/product-images", productImageRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/order",orderRoutes);
-app.use("/api/address",addressRoutes);
+app.use("/api/order", orderRoutes);
+app.use("/api/address", addressRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/viewed", viewedRoutes);
+
 // Kết nối DB
 connectDB();
 
@@ -53,4 +59,5 @@ app.get("/", (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+  startCronJobs();
 });

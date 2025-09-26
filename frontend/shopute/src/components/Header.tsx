@@ -4,6 +4,8 @@ import { RootState } from "../store/store";
 import { logout } from "../store/authSlice";
 import UserMenu from "./miniMenu";
 import { Search } from "lucide-react";
+import { useEffect } from "react";
+import { fetchCart, mergeGuestCart } from "../store/cartSlice";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -14,7 +16,21 @@ const Header = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    (dispatch as any)(fetchCart());
   };
+
+  const totalQuantity = useSelector((s: any) => s.cart?.cart?.totalQuantity || 0);
+
+  const token = useSelector((state: RootState) => state.auth.token);
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Merge guest cart into user cart then refresh
+      (dispatch as any)(mergeGuestCart());
+    } else {
+      // Refresh guest cart
+      (dispatch as any)(fetchCart());
+    }
+  }, [dispatch, token, isAuthenticated]);
 
   return (
     <header className=" sticky top-0 z-50 relative">
@@ -46,7 +62,14 @@ const Header = () => {
 
           {/* Cart + Auth */}
           <div className="flex items-center gap-4 text-sm text-gray-600 ml-6">
-            <button className="hover:text-green-600">Cart 🛒</button>
+            <Link to="/cart" className="relative hover:text-green-600">
+              <span>Cart 🛒</span>
+              {totalQuantity > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                  {totalQuantity}
+                </span>
+              )}
+            </Link>
             {isAuthenticated ? (
               <UserMenu  user={{ ...user, name: `${user?.firstName || ""} ${user?.lastName || ""}` }} handleLogout={handleLogout} />
             ) : (

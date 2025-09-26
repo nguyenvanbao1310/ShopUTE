@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import ProductMostViewCard from "../ProductMostViewCard";
 
 interface Product {
   id: number;
@@ -32,43 +32,7 @@ const MostViewedProducts: FC = () => {
         {/* 2 cột */}
         <div className="grid grid-cols-2 gap-4">
           {products.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center border p-3 rounded-lg cursor-pointer hover:shadow-lg hover:-translate-y-1 transition"
-            >
-              <Link to={`/product/${p.id}`}>
-              {/* Ảnh */}
-              <img
-                src={p.thumbnailUrl}
-                alt={p.name}
-                className="w-16 h-16 object-contain"
-              />
-              </Link>
-              {/* Thông tin */}
-              <div className="ml-3">
-                <Link to={`/product/${p.id}`}>
-                <h3 className="text-sm font-medium text-gray-800 line-clamp-2">
-                  {p.name}
-                </h3>
-                </Link>
-                {/* Giá */}
-                <div className="flex items-center mt-1">
-                  {parseFloat(p.discountPercent) > 0 && (
-                    <span className="text-gray-400 line-through text-xs mr-2">
-                      {Number(p.price).toLocaleString()}₫
-                    </span>
-                  )}
-                  <span className="text-indigo-600 font-semibold text-base">
-                    {Number(p.finalPrice).toLocaleString()}₫
-                  </span>
-                  {parseFloat(p.discountPercent) > 0 && (
-                    <span className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded">
-                      -{p.discountPercent}%
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+            <ProductMostViewCard key={p.id} product={p} />
           ))}
         </div>
 

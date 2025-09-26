@@ -2,9 +2,11 @@
 export enum OrderStatus {
   PENDING = "PENDING",
   CONFIRMED = "CONFIRMED",
+  PREPARING = "PREPARING",
   SHIPPED = "SHIPPED",
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",
+  CANCEL_REQUESTED = "CANCEL_REQUESTED",
 }
 
 // Định nghĩa enum cho trạng thái thanh toán

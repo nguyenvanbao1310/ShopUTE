@@ -8,8 +8,8 @@ import {
 
 const router = Router();
 
+router.get("/all", getAllCategories);
 router.post("/", authMiddleware, createCategory);
 router.put("/:id", authMiddleware, updateCategory);
-router.get("/all", getAllCategories);
 
 export default router;

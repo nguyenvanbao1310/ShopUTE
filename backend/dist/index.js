@@ -15,7 +15,10 @@ const authForgotRoutes_1 = __importDefault(require("./routes/authForgotRoutes"))
 const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const productImageRoutes_1 = __importDefault(require("./routes/productImageRoutes"));
 const cartRoutes_1 = __importDefault(require("./routes/cartRoutes"));
+const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
+const addressRoutes_1 = __importDefault(require("./routes/addressRoutes"));
 const models_1 = require("./models");
+const cronJobs_1 = require("./cronJobs");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8088;
@@ -35,6 +38,8 @@ app.use("/api/products", productRoutes_1.default);
 app.use("/api/categories", categoryRoutes_1.default);
 app.use("/api/product-images", productImageRoutes_1.default);
 app.use("/api/cart", cartRoutes_1.default);
+app.use("/api/order", orderRoutes_1.default);
+app.use("/api/address", addressRoutes_1.default);
 // Kết nối DB
 (0, configdb_1.connectDB)();
 // Routes
@@ -44,5 +49,6 @@ app.get("/", (req, res) => {
 // Start server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    (0, cronJobs_1.startCronJobs)();
 });
 //# sourceMappingURL=index.js.map

@@ -7,6 +7,11 @@ import ProductDiscount from "./ProductDiscount";
 import Cart from "./Cart";
 import User from "./User";
 import CartItem from "./CartItem";
+import CancelRequest from "./CancelRequest";
+import Rating from "./rating";
+import Coupon from "./Coupon";
+import Wishlist from "./Wishlist";
+import ViewedProduct from "./ViewedProduct";
 
 export function associateModels() {
   Category.belongsTo(Category, {
@@ -36,6 +41,17 @@ export function associateModels() {
     foreignKey: "productId",
   });
 
+  // User ↔ ViewedProduct
+  User.hasMany(ViewedProduct, { as: "ViewedProducts", foreignKey: "userId" });
+  ViewedProduct.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  // Product ↔ ViewedProduct
+  Product.hasMany(ViewedProduct, {
+    as: "ViewedProducts",
+    foreignKey: "productId",
+  });
+  ViewedProduct.belongsTo(Product, { as: "Product", foreignKey: "productId" });
+
   // ===== Associations cho Cart =====
   User.hasOne(Cart, {
     foreignKey: "userId",
@@ -60,6 +76,37 @@ export function associateModels() {
     onUpdate: "CASCADE",
   });
   CartItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
+
+  Order.hasMany(CancelRequest, {
+    as: "CancelRequests",
+    foreignKey: "orderId",
+    onDelete: "CASCADE",
+  });
+  CancelRequest.belongsTo(Order, { as: "Order", foreignKey: "orderId" });
+
+  User.hasMany(CancelRequest, {
+    as: "CancelRequests",
+    foreignKey: "userId",
+    onDelete: "SET NULL",
+  });
+  CancelRequest.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  // Ratings associations
+  Product.hasMany(Rating, { as: "Ratings", foreignKey: "productId" });
+  Rating.belongsTo(Product, { as: "Product", foreignKey: "productId" });
+  User.hasMany(Rating, { as: "Ratings", foreignKey: "userId" });
+  Rating.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  // Coupon associations
+  User.hasMany(Coupon, { as: "Coupons", foreignKey: "userId" });
+  Coupon.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  // Wishlist associations
+  User.hasMany(Wishlist, { as: "Wishlists", foreignKey: "userId" });
+  Wishlist.belongsTo(User, { as: "User", foreignKey: "userId" });
+
+  Product.hasMany(Wishlist, { as: "Wishlists", foreignKey: "productId" });
+  Wishlist.belongsTo(Product, { as: "Product", foreignKey: "productId" });
 }
 
 export {
@@ -72,4 +119,9 @@ export {
   User,
   Cart,
   CartItem,
+  CancelRequest,
+  Rating,
+  Coupon,
+  Wishlist,
+  ViewedProduct,
 };

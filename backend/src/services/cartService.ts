@@ -3,27 +3,29 @@ import sequelize from "../config/configdb";
 import Cart from "../models/Cart";
 import CartItem from "../models/CartItem";
 import Product from "../models/Product";
+import ProductDiscount from "../models/ProductDiscount";
 
-/** Lấy/khởi tạo giỏ hàng theo user */
-export async function getOrCreateCartByUser(userId: number, deviceId?: string | null) {
-  let cart = await Cart.findOne({
-    where: { userId },
-    include: [{ model: CartItem, as: "items" }],
-  });
-  if (!cart) {
-    cart = await Cart.create({ userId, deviceId: deviceId || null });
-  } else if (deviceId && cart.deviceId !== deviceId) {
-    await cart.update({ deviceId });
+type CartCtx = { userId?: number | null; deviceId?: string | null };
+type CartWithItems = Cart & { items?: CartItem[] };
+
+async function getOrCreateCart(ctx: CartCtx) {
+  if (ctx.userId) {
+    let cart = await Cart.findOne({ where: { userId: ctx.userId } });
+    if (!cart) cart = await Cart.create({ userId: ctx.userId, deviceId: null });
+    return cart;
   }
-  return cart;
+  if (ctx.deviceId) {
+    let cart = await Cart.findOne({ where: { deviceId: ctx.deviceId } });
+    if (!cart)
+      cart = await Cart.create({ userId: null, deviceId: ctx.deviceId });
+    return cart;
+  }
+  throw new Error("NO_CART_CONTEXT");
 }
 
-/** Thêm/cộng dồn 1 item vào giỏ*/
-export async function addItem(userId: number, productId: number, quantity = 1) {
+export async function addItem(ctx: CartCtx, productId: number, quantity = 1) {
   return await sequelize.transaction(async (t: Transaction) => {
-    const cart = await getOrCreateCartByUser(userId);
-
-    // kiểm tra sản phẩm tồn tại
+    const cart = await getOrCreateCart(ctx);
     const product = await Product.findByPk(productId, { transaction: t });
     if (!product) throw new Error("PRODUCT_NOT_FOUND");
 
@@ -39,29 +41,26 @@ export async function addItem(userId: number, productId: number, quantity = 1) {
         { transaction: t }
       );
       return existing;
-    } else {
-      const item = await CartItem.create(
-        {
-          cartId: cart.id,
-          productId,
-          quantity: Math.max(1, quantity),
-          selected: true, // giữ để UI có thể tick chọn/bỏ chọn
-        },
-        { transaction: t }
-      );
-      return item;
     }
+    return await CartItem.create(
+      {
+        cartId: cart.id,
+        productId,
+        quantity: Math.max(1, quantity),
+        selected: true,
+      },
+      { transaction: t }
+    );
   });
 }
 
-/** Cập nhật số lượng / chọn-bỏ chọn (không có resnapshot) */
 export async function updateItem(
-  userId: number,
+  ctx: CartCtx,
   cartItemId: number,
   params: { quantity?: number; selected?: boolean }
 ) {
   return await sequelize.transaction(async (t) => {
-    const cart = await getOrCreateCartByUser(userId);
+    const cart = await getOrCreateCart(ctx);
     const item = await CartItem.findOne({
       where: { id: cartItemId, cartId: cart.id },
       transaction: t,
@@ -70,18 +69,17 @@ export async function updateItem(
     if (!item) throw new Error("CART_ITEM_NOT_FOUND");
 
     const patch: any = {};
-    if (params.quantity !== undefined) patch.quantity = Math.max(1, Number(params.quantity));
+    if (params.quantity !== undefined)
+      patch.quantity = Math.max(1, Number(params.quantity));
     if (params.selected !== undefined) patch.selected = !!params.selected;
-
     await item.update(patch, { transaction: t });
     return item;
   });
 }
 
-/** Xoá 1 item */
-export async function removeItem(userId: number, cartItemId: number) {
+export async function removeItem(ctx: CartCtx, cartItemId: number) {
   return await sequelize.transaction(async (t) => {
-    const cart = await getOrCreateCartByUser(userId);
+    const cart = await getOrCreateCart(ctx);
     const item = await CartItem.findOne({
       where: { id: cartItemId, cartId: cart.id },
       transaction: t,
@@ -93,52 +91,155 @@ export async function removeItem(userId: number, cartItemId: number) {
   });
 }
 
-/** Xoá toàn bộ giỏ */
-export async function clearCart(userId: number) {
-  const cart = await getOrCreateCartByUser(userId);
+export async function clearCart(ctx: CartCtx) {
+  const cart = await getOrCreateCart(ctx);
   await CartItem.destroy({ where: { cartId: cart.id } });
   return true;
 }
 
-/** Chọn/bỏ chọn tất cả (phục vụ UI) */
-export async function toggleSelectAll(userId: number, selected: boolean) {
-  const cart = await getOrCreateCartByUser(userId);
+export async function toggleSelectAll(ctx: CartCtx, selected: boolean) {
+  const cart = await getOrCreateCart(ctx);
   await CartItem.update({ selected }, { where: { cartId: cart.id } });
   return true;
 }
 
-/** Lấy giỏ hàng: chỉ trả về thông tin hiển thị*/
-export async function getCartDetail(userId: number) {
-  const cart = await getOrCreateCartByUser(userId);
+export async function getCartDetail(ctx: CartCtx) {
+  const cart = await getOrCreateCart(ctx);
   const items = await CartItem.findAll({
     where: { cartId: cart.id },
-    include: [{ model: Product, as: "product", attributes: ["id", "name", "price", "imageUrl"] }],
+    include: [
+      {
+        model: Product,
+        as: "product",
+        attributes: ["id", "name", "price", "thumbnailUrl"],
+        include: [
+          {
+            model: ProductDiscount,
+            as: "discount",
+            attributes: ["isActive", "startsAt", "endsAt", "discountPercent"],
+            required: false,
+          },
+        ],
+      },
+    ],
     order: [["id", "ASC"]],
   });
 
-  let totalItems = 0;    // số loại sản phẩm (distinct)
-  let totalQuantity = 0; // tổng quantity
+  let totalItems = 0;
+  let totalQuantity = 0;
 
   const detailed = items.map((it) => {
     totalItems += 1;
     totalQuantity += it.quantity;
-
     return {
       id: it.id,
       productId: it.productId,
       name: (it as any).product?.name,
-      imageUrl: (it as any).product?.imageUrl,
-      // price chỉ để hiển thị tham khảo;
-      price: Number((it as any).product?.price ?? 0),
+      thumbnailUrl: (it as any).product?.thumbnailUrl,
+      price: Number((it as any).product?.price ?? 0), // hiển thị tham khảo; không checkout
       quantity: it.quantity,
       selected: it.selected,
     };
   });
 
-  return {
-    cartId: cart.id,
-    totalItems,     // dùng giá trị này cho “số sản phẩm đang tồn tại trong giỏ” theo LOẠI
-    totalQuantity,  // dùng cho tổng quantity nếu UI cần
-    items: detailed
-  };
+  return { cartId: cart.id, totalItems, totalQuantity, items: detailed };
+}
+
+export async function getCartDetailWithDiscount(ctx: CartCtx) {
+  const cart = await getOrCreateCart(ctx);
+  const items = await CartItem.findAll({
+    where: { cartId: cart.id },
+    include: [
+      {
+        model: Product,
+        as: "product",
+        attributes: ["id", "name", "price", "thumbnailUrl"],
+        include: [
+          {
+            model: ProductDiscount,
+            as: "discount",
+            attributes: ["isActive", "startsAt", "endsAt", "discountPercent"],
+            required: false,
+          },
+        ],
+      },
+    ],
+    order: [["id", "ASC"]],
+  });
+
+  let totalItems = 0;
+  let totalQuantity = 0;
+
+  const detailed = items.map((it: any) => {
+    totalItems += 1;
+    totalQuantity += it.quantity;
+    const p = it.product || {};
+    const rawPrice = Number(p.price ?? 0);
+    const d = p.discount || {};
+    const now = new Date();
+    const active =
+      d && d.isActive === true &&
+      (!d.startsAt || new Date(d.startsAt) <= now) &&
+      (!d.endsAt || new Date(d.endsAt) >= now) &&
+      Number(d.discountPercent) > 0;
+    const discountPercent = active ? Number(d.discountPercent) : 0;
+    const finalPrice = active ? Math.round((rawPrice * (1 - discountPercent / 100)) * 100) / 100 : rawPrice;
+    return {
+      id: it.id,
+      productId: it.productId,
+      name: p.name,
+      thumbnailUrl: p.thumbnailUrl,
+      price: Number(finalPrice),
+      quantity: it.quantity,
+      selected: it.selected,
+    };
+  });
+
+  return { cartId: cart.id, totalItems, totalQuantity, items: detailed };
+}
+
+export async function mergeGuestCartToUser(userId: number, deviceId: string) {
+  return await sequelize.transaction(async (t) => {
+    // giỏ đích
+    let userCart = await getOrCreateCart({ userId });
+    // giỏ nguồn (guest)
+    const guestCart = (await Cart.findOne({
+      where: { deviceId },
+      include: [{ model: CartItem, as: "items" }],
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    })) as CartWithItems | null;
+
+    if (!guestCart || !guestCart.items?.length) return userCart;
+
+    for (const item of guestCart.items) {
+      const exist = await CartItem.findOne({
+        where: { cartId: userCart.id, productId: item.productId },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (exist) {
+        await exist.update(
+          { quantity: exist.quantity + item.quantity },
+          { transaction: t }
+        );
+      } else {
+        await CartItem.create(
+          {
+            cartId: userCart.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            selected: item.selected,
+          },
+          { transaction: t }
+        );
+      }
+    }
+
+    // dọn giỏ guest
+    await CartItem.destroy({ where: { cartId: guestCart.id }, transaction: t });
+    await guestCart.destroy({ transaction: t });
+
+    return userCart;
+  });
 }
