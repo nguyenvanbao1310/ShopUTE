@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { AppDispatch } from "../store/store";
 import {
   clearCart,
@@ -18,6 +19,7 @@ const CartPage: React.FC = () => {
   const cart = useSelector(selectCart);
   const badge = useSelector(selectCartBadge); // số LOẠI
   const status = useSelector(selectCartStatus);
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchCart());
@@ -99,6 +101,7 @@ const CartPage: React.FC = () => {
             </div>
             <button className="mt-4 w-full bg-green-600 text-white rounded-lg py-2 hover:bg-green-700 disabled:opacity-50"
               disabled={summary.selectedItems === 0}
+              onClick={() => navigate("/checkout")}
             >
               Thanh toán
             </button>

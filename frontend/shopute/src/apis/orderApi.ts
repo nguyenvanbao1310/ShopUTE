@@ -25,3 +25,12 @@ export const requestCancelOrder = async (
 export async function payOrderCOD(orderId: number): Promise<void> {
   await api.post("/order/pay-cod", { orderId });
 }
+export async function createOrder(data: any): Promise<{ order: Order; details: any[] }> {
+  const res = await api.post("/order/create", data); 
+  return res.data; 
+}
+
+export async function payWithMomo(orderId: number): Promise<{ payUrl: string }> {
+  const res = await api.post("/order/pay-momo", { orderId });
+  return res.data; // { payUrl }
+}

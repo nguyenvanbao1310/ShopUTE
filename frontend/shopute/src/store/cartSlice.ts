@@ -276,3 +276,5 @@ export default cartSlice.reducer;
 export const selectCart = (s: any) => s.cart?.cart as CartDTO | null;
 export const selectCartStatus = (s: any) => s.cart?.status as CartState["status"];
 export const selectCartBadge = (s: any) => s.cart?.cart?.totalItems ?? 0;
+export const selectSelectedItems = (s: any) =>
+  (s.cart?.cart?.items ?? []).filter((it: CartItemDTO) => it.selected);

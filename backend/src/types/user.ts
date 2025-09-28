@@ -5,4 +5,5 @@ export interface UpdateUserData {
   gender?: boolean | null;
   birthday?: Date | null;
   avatar_url?: string | null;
+  loyaltyPoints?: number;
 }

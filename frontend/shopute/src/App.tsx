@@ -15,10 +15,11 @@ import AccountLayout from "./pages/account/AccountLayout";
 import Profile from "./pages/account/Profile";
 import Address from "./pages/account/Address";
 import ChangePassword from "./pages/account/ChangePassword";
-import Checkout from "./pages/Checkout";
+import Checkout from "./pages/CheckOut/Checkout";
 import OrderList from "./components/OrderList";
 import WishlistPage from "./pages/wishlist/WishlistPage";
 import ViewedProductsPage from "./pages/viewedProduct/ViewedProductsPage";
+import CheckoutComplete from "./pages/CheckOut/CheckoutComplete"
 function App() {
   return (
     <BrowserRouter>
@@ -31,7 +32,8 @@ function App() {
           <Route path="address" element={<Address />} />
           <Route path="change-password" element={<ChangePassword />} />
         </Route>
-		<Route path="/checkout" element={<Checkout />} />
+		    <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout/complete" element={<CheckoutComplete />} />
         <Route path="orders" element={<OrderList />} />
         <Route path="wishlist" element={<WishlistPage />} />
         <Route path="viewed" element={<ViewedProductsPage />} />

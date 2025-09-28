@@ -18,7 +18,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     cart: cartReducer,
- 	location: locationReducer,
+ 	  location: locationReducer,
     address: addressReducer,  },
   preloadedState,
 });
