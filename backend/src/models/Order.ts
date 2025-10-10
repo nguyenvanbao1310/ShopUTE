@@ -1,11 +1,19 @@
 import { Model, DataTypes, Optional } from "sequelize";
 import sequelize from "../config/configdb";
-
+import Voucher from "./Voucher";
+import ShippingMethod from "./ShippingMethod";
 export interface OrderAttributes {
   id: number;
   userId: number | null; // nếu có bảng Users; tạm cho phép null
   code: string; // mã đơn (unique)
   totalAmount: string; // DECIMAL -> string
+  discountAmount?: string | null;
+  shippingFee?: string | null;
+  finalAmount?: string | null;
+  usedPoints?: number;
+  pointsDiscountAmount?: string | null;
+  voucherId?: number | null;
+  shippingMethodId?: number | null;
   status:
     | "PENDING"
     | "CONFIRMED"
@@ -27,6 +35,13 @@ export interface OrderCreationAttributes
     OrderAttributes,
     | "id"
     | "userId"
+    | "discountAmount"
+    | "shippingFee"
+    | "finalAmount"
+    | "usedPoints"
+    | "pointsDiscountAmount"
+    | "voucherId"
+    | "shippingMethodId"
     | "paymentMethod"
     | "paymentStatus"
     | "note"
@@ -43,6 +58,13 @@ class Order
   public userId!: number | null;
   public code!: string;
   public totalAmount!: string;
+  public discountAmount!: string | null;
+  public shippingFee!: string | null;
+  public finalAmount!: string | null;
+  public usedPoints!: number;
+  public pointsDiscountAmount!: string | null;
+  public voucherId!: number | null;
+  public shippingMethodId!: number | null;
   public status!:
     | "PENDING"
     | "CONFIRMED"
@@ -69,6 +91,13 @@ Order.init(
     userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
     code: { type: DataTypes.STRING(30), allowNull: false, unique: true },
     totalAmount: { type: DataTypes.DECIMAL(14, 2), allowNull: false },
+    discountAmount: { type: DataTypes.DECIMAL(14, 2), allowNull: true },
+    shippingFee: { type: DataTypes.DECIMAL(14, 2), allowNull: true },
+    finalAmount: { type: DataTypes.DECIMAL(14, 2), allowNull: true },
+    usedPoints: { type: DataTypes.INTEGER.UNSIGNED, defaultValue: 0 },
+    pointsDiscountAmount: { type: DataTypes.DECIMAL(14, 2), allowNull: true },
+    voucherId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
+    shippingMethodId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
     status: {
       type: DataTypes.ENUM(
         "PENDING",
@@ -101,5 +130,9 @@ Order.init(
     timestamps: true,
   }
 );
+Order.belongsTo(Voucher, { foreignKey: "voucherId", as: "voucher" });
+Voucher.hasMany(Order, { foreignKey: "voucherId", as: "orders" });
 
+Order.belongsTo(ShippingMethod, { foreignKey: "shippingMethodId", as: "shippingMethod" });
+ShippingMethod.hasMany(Order, { foreignKey: "shippingMethodId", as: "orders" });
 export default Order;

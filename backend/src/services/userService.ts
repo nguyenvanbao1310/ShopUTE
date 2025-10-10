@@ -11,7 +11,7 @@ const getInforUser = async (userId: number) => {
         const user = await User.findOne({
             where: {
                 id: userId
-            }, attributes: ["firstName", "lastName", "phone", "email", "gender", "birthday","avatar_url",]
+            }, attributes: ["firstName", "lastName", "phone", "email", "gender", "birthday","avatar_url","loyaltyPoints"]
         });
         return user;
     } catch (error) {

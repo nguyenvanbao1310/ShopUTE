@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../store/authSlice";
+import { loginUser,fetchProfile } from "../store/authSlice";
 import { RootState, AppDispatch } from "../store/store";
 import { useNavigate } from "react-router-dom";
 import { unwrapResult } from "@reduxjs/toolkit";
@@ -26,6 +26,7 @@ const Login: FC = () => {
       localStorage.setItem("token", result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
 
+      await dispatch(fetchProfile());
       navigate("/home");
     } catch (err: any) {
       alert(err?.message || "Login failed");

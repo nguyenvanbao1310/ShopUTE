@@ -5,10 +5,12 @@ import type { CancelResult } from "../services/orderService";
 export const createOrder = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
-    const data = req.body as orderService.CreateOrderInput;
-    data.userId = userId;
-    const result = await orderService.createOrder(data);
-    res.status(201).json(result);
+     const payload = req.body as orderService.CreateOrderInput;
+    if (userId) {
+      payload.userId = userId;
+    }
+   const { order, details } = await orderService.createOrder(payload);
+    res.status(201).json({ message: "Tạo đơn hàng thành công",order, details });
   } catch (error) {
     const err = error as Error;
     res.status(400).json({ message: err.message });
@@ -18,7 +20,6 @@ export const createOrder = async (req: Request, res: Response) => {
 export const confirmOrder = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.body;
-
     const result = await orderService.confirmOrder(Number(orderId));
     res.status(201).json(result);
   } catch (error) {

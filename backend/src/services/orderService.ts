@@ -8,10 +8,25 @@ import type { OrderCreationAttributes } from "../models/Order";
 import type { OrderDetailCreationAttributes } from "../models/OrderDetail";
 import { OrderStatus, PaymentStatus } from "../types/order";
 import CancelRequest from "../models/CancelRequest";
+import Voucher from "../models/Voucher";
+import ShippingMethod from "../models/ShippingMethod";
 
-export interface CreateOrderInput extends OrderCreationAttributes {
-  details: Omit<OrderDetailCreationAttributes, "orderId">[];
+export interface CreateOrderInput {
+  userId?: number;
+  code: string;
+  paymentMethod?: string | null;
+  note?: string | null;
+  deliveryAddress?: string | null;
+  voucherId?: number | null;
+  shippingMethodId: number;
+  usedPoints?: number;
+  items: {
+    productId: number;
+    quantity: number;
+    price: number; 
+  }[];
 }
+
 
 export interface CancelResult {
   type: "cancelled" | "request";
@@ -22,27 +37,81 @@ export interface CancelResult {
 export async function createOrder(data: CreateOrderInput) {
   const t = await sequelize.transaction();
   try {
-    const totalAmount = data.details
-      .reduce((sum, d) => sum + parseFloat(d.subtotal), 0)
-      .toFixed(2);
+    // 1. Tính subtotal
+    const subtotal = data.items.reduce(
+      (sum, i) => sum + i.price * i.quantity,
+      0
+    );
 
+    // 2. Tính phí ship
+    let shippingFee = 0;
+    if (data.shippingMethodId) {
+      const shipping = await ShippingMethod.findByPk(data.shippingMethodId);
+      if (shipping) {
+        shippingFee = Number(shipping.fee);
+      }
+    }
+    // 3. Tính giảm giá voucher
+    let discountAmount = 0;
+    if (data.voucherId) {
+      const voucher = await Voucher.findByPk(data.voucherId);
+      if (voucher) {
+        if (voucher.discountType === "PERCENT") {
+          discountAmount = (subtotal * Number(voucher.discountValue)) / 100;
+        } else {
+          discountAmount = Number(voucher.discountValue);
+        }
+      }
+    }
+    // 4. Tính giảm giá từ điểm thưởng
+    const usedPoints = data.usedPoints ?? 0;
+    const pointsDiscountAmount = usedPoints * 1000; // 1 điểm = 1000đ
+
+    // 5. Tính final total
+    const finalAmount =
+      subtotal + shippingFee - discountAmount - pointsDiscountAmount;
+
+    // 6. Tạo order
     const order = await Order.create(
       {
         userId: data.userId ?? null,
         code: data.code,
-        totalAmount,
+        totalAmount: subtotal.toFixed(2),
+        discountAmount: discountAmount.toFixed(2),
+        shippingFee: shippingFee.toFixed(2),
+        finalAmount: finalAmount.toFixed(2),
+        usedPoints,
+        pointsDiscountAmount: pointsDiscountAmount.toFixed(2),
+        voucherId: data.voucherId ?? null,
+        shippingMethodId: data.shippingMethodId,
         status: "PENDING",
-        paymentMethod: data.paymentMethod ?? null,
+        paymentMethod: data.paymentMethod ?? "COD",
         paymentStatus: "UNPAID",
         note: data.note ?? null,
+        deliveryAddress: data.deliveryAddress ?? null,
       },
       { transaction: t }
     );
-    const details = data.details.map((d) => ({
-      ...d,
+    // 7. Tạo order details (theo đúng model của bạn)
+    const details = data.items.map((i) => ({
       orderId: order.id,
+      productId: i.productId,
+      quantity: i.quantity,
+      subtotal: (i.price * i.quantity).toFixed(2),
     }));
+
     await OrderDetail.bulkCreate(details, { transaction: t });
+
+    // if (data.userId && usedPoints > 0) {
+    //   const user = await User.findByPk(data.userId, { transaction: t });
+    //   if (user) {
+    //     if ((user.loyaltyPoints ?? 0) < usedPoints) {
+    //       throw new Error("Không đủ điểm thưởng để sử dụng");
+    //     }
+    //     user.loyaltyPoints = (user.loyaltyPoints ?? 0) - usedPoints;
+    //     await user.save({ transaction: t });
+    //   }
+    // }
     await t.commit();
     return { order, details };
   } catch (error) {

@@ -1,37 +1,28 @@
 import { useEffect, useState } from "react";
-import { addressApi } from "../../apis/addressApi";
-import {Address }from "../../types/address";
-
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "../../store/store";
+import {
+  fetchAddresses,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+} from "../../store/addressSlice";
+import { Address } from "../../types/address";
+import AddressForm from "./AddressForm";
 export default function AddressPage() {
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const { addresses, loading } = useSelector((s: RootState) => s.address);
+
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const data = await addressApi.getAll();
-      setAddresses(data);
-    } catch (err) {
-      console.error("Lỗi tải địa chỉ:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
-  }, []);
+    dispatch(fetchAddresses());
+  }, [dispatch]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("Bạn có chắc muốn xóa địa chỉ này?")) return;
-    try {
-      await addressApi.remove(id);
-      fetchData();
-    } catch (err) {
-      console.error("Xóa thất bại:", err);
-    }
+    await dispatch(deleteAddress(id));
   };
 
   const handleSave = async (form: {
@@ -39,20 +30,16 @@ export default function AddressPage() {
     ward: string;
     province: string;
     phone: string;
+    address: string;
     isDefault?: boolean;
   }) => {
-    try {
-      if (editing) {
-        await addressApi.update(editing.id, form);
-      } else {
-        await addressApi.create(form);
-      }
-      setShowForm(false);
-      setEditing(null);
-      fetchData();
-    } catch (err) {
-      console.error("Lưu địa chỉ thất bại:", err);
+    if (editing) {
+      await dispatch(updateAddress({ id: editing.id, data: form }));
+    } else {
+      await dispatch(createAddress(form));
     }
+    setShowForm(false);
+    setEditing(null);
   };
 
   if (loading) return <p>Đang tải...</p>;
@@ -120,98 +107,6 @@ export default function AddressPage() {
           onSave={handleSave}
         />
       )}
-    </div>
-  );
-}
-
-interface FormProps {
-  editing: Address | null;
-  onClose: () => void;
-  onSave: (form: {
-    street: string;
-    ward: string;
-    province: string;
-    phone: string;
-    isDefault?: boolean;
-  }) => void;
-}
-
-function AddressForm({ editing, onClose, onSave }: FormProps) {
-  const [street, setStreet] = useState(editing?.street || "");
-  const [ward, setWard] = useState(editing?.ward || "");
-  const [province, setProvince] = useState(editing?.province || "");
-  const [phone, setPhone] = useState(editing?.phone || "");
-  const [isDefault, setIsDefault] = useState(editing?.isDefault || false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({ street, ward, province, phone, isDefault });
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-lg font-bold mb-4">
-          {editing ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Số nhà / Đường"
-            value={street}
-            onChange={(e) => setStreet(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Xã / Phường"
-            value={ward}
-            onChange={(e) => setWard(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Tỉnh / Thành phố"
-            value={province}
-            onChange={(e) => setProvince(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Số điện thoại"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
-            />
-            Đặt làm mặc định
-          </label>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              {editing ? "Cập nhật" : "Hoàn thành"}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 }

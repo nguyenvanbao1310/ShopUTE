@@ -16,7 +16,8 @@ const UserMenu = ({ user, handleLogout }: any) => {
           alt="avatar"
           className="w-8 h-8 rounded-full border"
         />
-        <span className="text-gray-700">{user?.name || "User"}</span>
+        <span className="text-gray-700">{user?.name || user?.email}</span>
+
       </button>
 
       {/* Dropdown */}
@@ -39,6 +40,24 @@ const UserMenu = ({ user, handleLogout }: any) => {
                 onClick={() => setOpen(false)}
               >
                 Đơn hàng
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/wishlist"
+                className="block px-4 py-2 hover:bg-gray-100 "
+                onClick={() => setOpen(false)}
+              >
+                Yêu thích
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/viewed"
+                className="block px-4 py-2 hover:bg-gray-100 "
+                onClick={() => setOpen(false)}
+              >
+                Lịch sử xem
               </Link>
             </li>
             <li>

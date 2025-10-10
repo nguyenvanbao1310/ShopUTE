@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
-import { userApi } from "../../apis/user";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "../../store/store";
+import { fetchProfile, updateProfile } from "../../store/authSlice";
 
 const defaultAvatar = "/logo192.png";
 
 export default function Profile() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, loading } = useSelector((s: RootState) => s.auth);
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [phone, setPhone] = useState("");
@@ -15,22 +19,19 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const data = await userApi.getProfile();
-        setFirstname(data.firstName);
-        setLastname(data.lastName);
-        setPhone(data.phone);
-        setEmail(data.email);
-        setAvatar(data.avatar_url || null);
-        setGender(data.gender ?? null);
-        setBirthday(data.birthday ?? "");
-      } catch (err) {
-        console.error("Lỗi khi lấy profile:", err);
-      }
-    };
-    fetchProfile();
-  }, []);
+    dispatch(fetchProfile());
+  }, [dispatch]);
+  useEffect(() => {
+    if (user) {
+      setFirstname(user.firstName);
+      setLastname(user.lastName);
+      setPhone(user.phone);
+      setEmail(user.email);
+      setGender(user.gender ?? null);
+      setBirthday(user.birthday ?? "");
+      setAvatar(user.avatar_url || null);
+    }
+  }, [user]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -42,23 +43,20 @@ export default function Profile() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await userApi.updateProfile({
-        firstName: firstname,
-        lastName: lastname,
-        phone,
-        gender,
-        birthday,
-        // avatarUrl: avatar // nếu backend hỗ trợ upload
+    dispatch(
+      updateProfile({
+        firstName: firstname, lastName: lastname, phone, email, gender, birthday
+      }))
+      .unwrap()
+      .then(() => {
+        alert("Cập nhật thành công!");
+        setIsEditing(false);
+      })
+      .catch((err) => {
+        alert("Cập nhật thất bại: " + err);
       });
-      alert("Cập nhật thành công!");
-      setIsEditing(false);
-    } catch (err) {
-      console.error("Cập nhật thất bại:", err);
-      alert("Cập nhật thất bại!");
-    }
   };
-
+if (loading && !user) return <p>Đang tải...</p>;
   return (
     <div className="bg-white rounded-lg shadow p-8">
       <h1 className="text-2xl font-semibold text-gray-700 border-b pb-4 mb-6">

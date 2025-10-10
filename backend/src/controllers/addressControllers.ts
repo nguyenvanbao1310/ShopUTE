@@ -4,7 +4,8 @@ import * as addressService from "../services/addressService";
 export const createAddress = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id; // lấy từ middleware auth (JWT chẳng hạn)
-        const { street, ward, province, address,phone, isDefault} = req.body;
+        const { street, ward, province,phone, isDefault} = req.body;
+        const address = `${street}, ${ward}, ${province}`;
         const newAddress = await addressService.createAddress(
             userId,
             street,
@@ -27,8 +28,8 @@ export const updateAddress = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     const addID = Number(req.params.id);
-    const { street, ward, province, address,phone, isDefault } = req.body;
-
+    const { street, ward, province,phone, isDefault } = req.body;
+    const address = `${street}, ${ward}, ${province}`;
     const updated = await addressService.updateAddress(
       userId,
       addID,

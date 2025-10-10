@@ -4,7 +4,7 @@ import { autoConfirmOrders } from "./autoConfirmOrders";
 
 export function startCronJobs() {
   // chạy mỗi phút
-  cron.schedule(" * * * * *", async () => {
+  cron.schedule(" */30 * * * *", async () => {
     console.log("⏰ Running autoConfirmOrders...");
     await autoConfirmOrders();
   });

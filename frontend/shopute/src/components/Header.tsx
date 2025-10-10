@@ -71,7 +71,7 @@ const Header = () => {
               )}
             </Link>
             {isAuthenticated ? (
-              <UserMenu user={user} handleLogout={handleLogout} />
+              <UserMenu  user={{ ...user, name: `${user?.firstName || ""} ${user?.lastName || ""}` }} handleLogout={handleLogout} />
             ) : (
               <>
                 <Link

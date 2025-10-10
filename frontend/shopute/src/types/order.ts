@@ -37,3 +37,27 @@ export interface CancelOrderResponse {
   order?: Order; // khi type === "cancelled"
   message?: string; // khi type === "request"
 }
+export const POINTS_TO_VND_RATE = 1000;
+export const DEFAULT_PAYMENT_METHOD = "COD";
+
+export const PAYMENT_METHODS = [
+  { 
+    id: "COD", 
+    label: "Thanh toán khi nhận hàng",
+    desc: "Trả tiền mặt khi nhận hàng"
+  },
+  { 
+    id: "VNPAY", 
+    label: "Ví VNPAY",
+    desc: "Thanh toán qua ví điện tử VNPAY"
+  },
+] as const;
+
+export const ORDER_STATUS = {
+  PENDING: "PENDING",
+  PROCESSING: "PROCESSING",
+  CONFIRMED: "CONFIRMED",
+  SHIPPING: "SHIPPING",
+  DELIVERED: "DELIVERED",
+  CANCELLED: "CANCELLED"
+} as const;

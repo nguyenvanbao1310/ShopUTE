@@ -10,7 +10,8 @@ const sequelize = new Sequelize("shopute", "root", DB_PASS, {
   timezone: "+07:00",
   logging: false,
   dialectOptions: {
-    useUTC: false,
+    dateStrings: true,
+    typeCast: true,
   },
 });
 

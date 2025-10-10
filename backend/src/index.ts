@@ -12,6 +12,10 @@ import productImageRoutes from "./routes/productImageRoutes";
 import cartRoutes from "./routes/cartRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import addressRoutes from "./routes/addressRoutes";
+import wishlistRoutes from "./routes/wishlistRoutes";
+import viewedRoutes from "./routes/viewedRoutes";
+import voucherRoutes from "./routes/voucherRoutes";
+import shippingMethodRoutes from "./routes/shippingMethodRoutes";
 import { associateModels } from "./models";
 import { startCronJobs } from "./cronJobs";
 dotenv.config();
@@ -43,6 +47,10 @@ app.use("/api/product-images", productImageRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/address", addressRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/viewed", viewedRoutes);
+app.use("/api/vouchers", voucherRoutes);
+app.use("/api/shipping-methods", shippingMethodRoutes);
 // Kết nối DB
 connectDB();
 

@@ -5,5 +5,6 @@ export interface Profile {
   email: string;
   avatar_url?: string | null; 
   gender?: boolean | null;    
-  birthday?: string | null;   
+  birthday?: string | null;
+  loyaltyPoints?: number | null;   
 }

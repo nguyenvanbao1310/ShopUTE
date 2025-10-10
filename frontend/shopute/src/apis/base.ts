@@ -18,22 +18,35 @@ export function getDeviceId(): string {
   }
 }
 
-/** Token dùng cho Authorization; undefined nếu không có */
+// Nhân Sam Note ở đay :  hàm getToken này là hàm lấy token từ store của redux, mà ở trong addressapi
+// gọi lại base thế là có vòng lặp vô hạn, nên tạm thời comment lại
+
+// góp ý là lưu toke trong seassionStorage, không nên lưu trong localstorage vì lý do bảo mật
+// tạm thời viết 1 hàm bẫn lấy toklen từ localstorage để thay thế
 function getToken(): string | undefined {
-  try {
-    const s: any = store.getState?.();
-    const t =
-      s?.auth?.token ??
-      s?.auth?.accessToken ??
-      s?.auth?.user?.token ??
-      localStorage.getItem("token") ??
-      localStorage.getItem("accessToken") ??
-      undefined;
-    return typeof t === "string" && t.trim() ? t : undefined;
-  } catch {
-    return undefined;
-  }
+  const t =
+    localStorage.getItem("token") ??
+    localStorage.getItem("accessToken") ??
+    undefined;
+  return typeof t === "string" && t.trim() ? t : undefined;
 }
+
+// /** Token dùng cho Authorization; undefined nếu không có */
+// function getToken(): string | undefined {
+//   try {
+//     const s: any = store.getState?.();
+//     const t =
+//       s?.auth?.token ??
+//       s?.auth?.accessToken ??
+//       s?.auth?.user?.token ??
+//       localStorage.getItem("token") ??
+//       localStorage.getItem("accessToken") ??
+//       undefined;
+//     return typeof t === "string" && t.trim() ? t : undefined;
+//   } catch {
+//     return undefined;
+//   }
+// }
 
 export const api = axios.create({
   baseURL: BASE_URL,

@@ -13,6 +13,7 @@ import {
   getSimilarProducts,
 } from "../controllers/productControllers";
 import { authMiddleware } from "../middleware/auth";
+import { listProductRatings, createProductRating } from "../controllers/ratingControllers";
 
 const router = Router();
 
@@ -25,6 +26,9 @@ router.get("/all", getAllProducts);
 router.get('/category/:categoryName', getProductsByCategory);
 // Detail (auto +1 view)
 router.get("/:id", getProductDetail);
+// Ratings for product
+router.get("/:id/ratings", listProductRatings);
+router.post("/:id/ratings", authMiddleware, createProductRating);
 // Create / Update
 router.put("/:id", authMiddleware, updateProduct);
 router.post("/", authMiddleware, createProduct);

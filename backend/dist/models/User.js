@@ -38,6 +38,18 @@ User.init({
         type: sequelize_1.DataTypes.STRING(20),
         allowNull: false,
     },
+    gender: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: true,
+    },
+    birthday: {
+        type: sequelize_1.DataTypes.DATEONLY,
+        allowNull: true,
+    },
+    avatar_url: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
+    },
     otp: {
         type: sequelize_1.DataTypes.STRING(10),
         allowNull: true,
@@ -50,6 +62,11 @@ User.init({
         type: sequelize_1.DataTypes.ENUM("user", "admin"),
         allowNull: false,
         defaultValue: "user",
+    },
+    loyaltyPoints: {
+        type: sequelize_1.DataTypes.INTEGER.UNSIGNED,
+        allowNull: false,
+        defaultValue: 0,
     },
 }, {
     sequelize: configdb_1.default, // truyền kết nối DB
