@@ -96,7 +96,7 @@ export const verifyRegisterOtp = createAsyncThunk(
   }
 );
 
-export const sendOtp = createAsyncThunk(
+export const sendOtp = createAsyncThunk<string, string>(
   "auth/sendOtp",
   async (email, thunkAPI) => {
     try {
@@ -112,6 +112,7 @@ export const sendOtp = createAsyncThunk(
     }
   }
 );
+
 
 // Verify OTP, server trả về resetToken: string
 export const verifyOtp = createAsyncThunk<string, { email: string; otp: string }>(
